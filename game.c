@@ -98,7 +98,7 @@ void setup_level() {
         mobs[i].active = false;
     }
 
-    for (int i=0; i < 100; i++) {
+    for (int i=0; i < MAX_MOBS; i++) {
         mobs[i].x = rand()%(LEVEL_WIDTH-2) + 1;
         mobs[i].y = rand()%(LEVEL_HEIGHT-2) + 1;
         mobs[i].behavior = RandomWalk;
