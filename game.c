@@ -16,24 +16,35 @@
 
 char level[LEVEL_HEIGHT][LEVEL_WIDTH];
 
-enum Behavior {RandomWalk};
+enum Behavior {RandomWalk, KeyboardInput};
 
 struct mobile {
     char display;
     int x;
     int y;
     bool active;
+    bool stacks;
     enum Behavior behavior;
     char emote;
 };
 
-struct mobile player;
+int keyboard_x, keyboard_y = 0;
 
-#define MAX_MOBS 100
+struct mobile *player;
+
+#define MAX_MOBS 1000
 struct mobile mobs[MAX_MOBS];
 
 bool is_position_valid(int x, int y) {
-    return level[y][x] != WALL;
+    if (level[y][x] == WALL) return false;
+    else {
+        for (int i=0; i < MAX_MOBS; i++) {
+            if (!mobs[i].stacks && mobs[i].x == x && mobs[i].y == y) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool move_if_valid(struct mobile *mob, int x, int y) {
@@ -60,8 +71,8 @@ void draw() {
     int row,col;
     getmaxyx(stdscr,row,col);
 
-    int dx = col/2 - player.x;
-    int dy = row/2 - player.y;
+    int dx = col/2 - player->x;
+    int dy = row/2 - player->y;
 
     for (int x = 0; x < col; x++) {
         for (int y = 0; y < row; y++) {
@@ -92,10 +103,9 @@ void setup_level() {
             }
         }
     }
-    player.x = player.y = 1;
-    player.display = ICON_HUMAN;
     for (int i=0; i < MAX_MOBS; i++) {
         mobs[i].active = false;
+        mobs[i].stacks = false;
     }
 
     for (int i=0; i < MAX_MOBS; i++) {
@@ -106,33 +116,30 @@ void setup_level() {
 
         if (rand()%2 == 0) {
             mobs[i].display = ICON_GOBLIN;
+            mobs[i].stacks = true;
         } else {
             mobs[i].display = ICON_ORC;
         }
     }
 }
 
-int move_player() {
-    int x = player.x;
-    int y = player.y;
+int get_input() {
     switch (getch()) {
         case KEY_UP:
-            y -= 1;
+            keyboard_y = -1;
             break;
         case KEY_DOWN:
-            y += 1;
+            keyboard_y = 1;
             break;
         case KEY_RIGHT:
-            x += 1;
+            keyboard_x = 1;
             break;
         case KEY_LEFT:
-            x -= 1;
+            keyboard_x = -1;
             break;
         case 'q':
             return -1;
     }
-
-    move_if_valid(&player, x, y);
     return 0;
 }
 
@@ -146,9 +153,18 @@ void move_mobile(struct mobile *mob) {
             } else {
                 y += rand()%3 - 1;
             }
+            break;
+        case KeyboardInput:
+            x += keyboard_x;
+            y += keyboard_y;
+            keyboard_x = 0;
+            keyboard_y = 0;
+            break;
     }
-    if (!(move_if_valid(mob, x, y))) {
-        mob->emote = OUCH;
+    if (x != mob->x || y != mob->y) {
+        if (!(move_if_valid(mob, x, y))) {
+            mob->emote = OUCH;
+        }
     }
 }
 
@@ -165,7 +181,7 @@ void main() {
 
         setup_level();
         draw();
-        while (move_player() == 0) {
+        while (get_input() == 0) {
             for (int i=0; i < MAX_MOBS; i++) {
                 if (mobs[i].active) {
                     move_mobile(&mobs[i]);
