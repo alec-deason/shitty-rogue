@@ -108,13 +108,7 @@ void setup_level() {
         mobs[i].stacks = false;
     }
 
-    player = &mobs[MAX_MOBS-1];
-    player->x = player->y = 1;
-    player->behavior = KeyboardInput;
-    player->display = ICON_HUMAN;
-    player->active = true;
-
-    for (int i=0; i < 100; i++) {
+    for (int i=0; i < MAX_MOBS; i++) {
         mobs[i].x = rand()%(LEVEL_WIDTH-2) + 1;
         mobs[i].y = rand()%(LEVEL_HEIGHT-2) + 1;
         mobs[i].behavior = RandomWalk;
