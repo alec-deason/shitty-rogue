@@ -10,80 +10,103 @@
 #include "los/los.h"
 #include "colors/colors.h"
 
+#define MESSAGE_LENGTH 200
+
 int keyboard_x = 0, keyboard_y = 0;
-char message_banner[200];
+char message_banner[MESSAGE_LENGTH];
 
-
-void draw_mobile(mobile *mob, int dx, int dy) {
-    char display = ((item*)mob)->display;
+void draw_mobile(mobile *mob, int x_offset, int y_offset) {
+    char icon = ((item*)mob)->display;
 
     if (mob->emote) {
-        display = mob->emote;
+        icon = mob->emote;
+        //ASK 'false' a good stand-in for 'None'?
+        //ASK Why can't I use 'NULL'?
         mob->emote = false;
     }
 
-    mvprintw(dy+mob->y, dx+mob->x, "%c", display);
+    mvprintw(mob->y + y_offset, mob->x + x_offset, "%c", icon);
 }
 
 void draw(level *lvl) {
     int row,col;
     getmaxyx(stdscr,row,col);
+    //ASK Why decrement row but not column?
     row -= 1;
 
-    int dx = col/2 - lvl->player->x;
-    int dy = row/2 - lvl->player->y;
+    // Offset to keep player in center
+    int x_offset = (col / 2) - lvl->player->x;
+    int y_offset = (row / 2) - lvl->player->y;
 
-    for (int x = 0; x < col; x++) {
-        for (int y = 0; y < row; y++) {
-            int xx = x - dx;
-            int yy = y - dy;
-            char display = UNSEEN;
-            // Positions which are part of the map
-            if (xx >= 0 && xx < lvl->width && yy >= 0 && yy < lvl->height) {
-                if (can_see(lvl, lvl->player, xx, yy)) {
-                    // Burning supercedes everything!
-                    if (lvl->chemistry[xx][yy]->elements[fire] > 0) {
-                        display = BURNING;
+    //ASK No point to restriction this loop to only map coords?
+    for (int xx = 0; xx < col; xx++) {
+        for (int yy = 0; yy < row; yy++) {
+            //ASK Declarations inside loops are OK?
+            // (xx,yy) screen coordinates
+            // (x ,y ) map coordinates
+            int x = xx - x_offset;
+            int y = yy - y_offset;
+
+            char icon = UNSEEN;
+
+            // Only draw coords which fall within the map
+            if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
+                // Only draw coords which the player can see
+                //ASK Splitting this conditional allows for debugging
+                if (can_see(lvl, lvl->player, x, y)) {
+                    // Draw a square status effect
+                    if (lvl->chemistry[x][y]->elements[fire] > 0) {
+                        icon = BURNING;
+                        //TODO Can we put the colors into the icons?
                         attron(COLOR_PAIR(RED));
+                    // Draw an item
+                    } else if (lvl->items[x][y] != NULL) {
+                        icon = lvl->items[x][y]->item->display;
+                    // Draw the floor
                     } else {
-                        // Draw items
-                        if (lvl->items[xx][yy] != NULL) {
-                            display = lvl->items[xx][yy]->item->display;
-                        } else {
-                            // Draw the square
-                            display = lvl->tiles[xx][yy];
-                        }
+                        icon = lvl->tiles[x][y];
                     }
                 }
-                if (display == UNSEEN) {
-                    display = lvl->memory[xx][yy];
+                //TODO Icons shouldn't determine what things are, the other way around
+                // Fog of war
+                if (icon == UNSEEN) {
+                    icon = lvl->memory[x][y];
                     attron(COLOR_PAIR(YELLOW));
                 } else {
-                    lvl->memory[xx][yy] = display;
+                    lvl->memory[x][y] = icon;
                 }
             }
-            mvprintw(y, x, "%c", display);
-            // this should be a general unsetter, not this
+            mvprintw(yy, xx, "%c", icon);
+            //TODO this should be a general unsetter, not this
             attroff(COLOR_PAIR(YELLOW));
             attroff(COLOR_PAIR(RED));
         }
     }
+    // Mobs don't exist in the map. Coords exist on the mobs.
     for (int i=0; i < lvl->mob_count; i++) {
-        if (lvl->mobs[i]->active && can_see(lvl, lvl->player, lvl->mobs[i]->x, lvl->mobs[i]->y)) {
-            mobile* mob = lvl->mobs[i];
-            if (mob->y+dy > 0 && mob->y+dy <= row && mob->x+dx > 0 && mob->x+dx <= col) {
-                draw_mobile(lvl->mobs[i], dx, dy);
+        //ASK Is this a readability alias?
+        mobile* mob = lvl->mobs[i];
+        //TODO Make a mob-to-mob wrapper around can_see()
+        if (mob->active && can_see(lvl, lvl->player, mob->x, mob->y)) {
+            //ASK God, I hate 0-indexing magic math :(
+            if ((0 < mob->y + y_offset && mob->y + y_offset <= row) && (0 < mob->x + x_offset && mob->x + x_offset <= col)) {
+                draw_mobile(mob, x_offset, y_offset);
             }
         }
     }
-    draw_mobile(lvl->player, dx, dy);
+    //ASK Tempted to make a draw_player() wrapper
+    draw_mobile(lvl->player, x_offset, y_offset);
     move(row, 0);
     clrtoeol();
+    //ASK Should be a print banner function, probably
     mvprintw(row, 0, message_banner);
 }
 
+//ASK I find naming things 'print' when they actually prep/load/whatever confusing
+//TODO When the same message (e.g. quaff) is repeated, it should be clear somehow
 void print_message(char *msg) {
-    strncpy(message_banner, msg, 200);
+    //ASK Why does this function exist? 
+    strncpy(message_banner, msg, MESSAGE_LENGTH);
 }
 
 void drop_item(level *lvl, mobile *mob) {
@@ -91,8 +114,8 @@ void drop_item(level *lvl, mobile *mob) {
     if (item != NULL) {
         level_push_item(lvl, item, mob->x, mob->y);
         if (mob == lvl->player) {
-            char msg[200];
-            snprintf(msg, 200, "You drop the %s", item->name);
+            char msg[MESSAGE_LENGTH];
+            snprintf(msg, MESSAGE_LENGTH, "You drop the %s", item->name);
             print_message(msg);
         }
     }
@@ -103,8 +126,8 @@ void pickup_item(level *lvl, mobile *mob) {
     if (item != NULL) {
         push_inventory(mob, item);
         if (mob == lvl->player) {
-            char msg[200];
-            snprintf(msg, 200, "You pick up the %s", item->name);
+            char msg[MESSAGE_LENGTH];
+            snprintf(msg, MESSAGE_LENGTH, "You pick up the %s", item->name);
             print_message(msg);
         }
     }
@@ -120,9 +143,9 @@ void smash(level *lvl, mobile *mob) {
 }
 
 void print_location_elements(level *lvl, mobile *mob) {
-    char *message = malloc(sizeof(char)*200);
+    char *message = malloc(sizeof(char)*MESSAGE_LENGTH);
     constituents *chem = lvl->chemistry[mob->x][mob->y];
-    snprintf(message, 200, "wood: %d air: %d fire: %d", chem->elements[wood], chem->elements[air], chem->elements[fire]);
+    snprintf(message, MESSAGE_LENGTH, "wood: %d air: %d fire: %d", chem->elements[wood], chem->elements[air], chem->elements[fire]);
     print_message(message);
     free((void*)message);
 }
@@ -154,11 +177,11 @@ void toggle_door(level *lvl, mobile *mob) {
 }
 
 int get_input(level *lvl) {
+    //TODO Don't advance on any key. Have explicit "wait" key (e.g. <SPACE>)
     char *inventory;
-    char *message = malloc(sizeof(char)*200);
+    char *message = malloc(sizeof(char)*MESSAGE_LENGTH);
     int input = getch();
     int return_code = 0;
-
 
     switch (input) {
         case KEY_UP:
@@ -173,9 +196,14 @@ int get_input(level *lvl) {
         case KEY_LEFT:
             lvl->keyboard_x = -1;
             break;
+        case 'H':
+            snprintf(message, MESSAGE_LENGTH, "HELP: (i)nv (d)rop (.)pickup (r)otate inv (q)uaff (v)smash (e)xamine (s)tatus (t)ile (Q)uit");
+            print_message(message);
+            break;
         case 'i':
-            inventory = inventory_string(lvl->player, 200);
-            snprintf(message, 200, "Your inventory contains: %s", inventory);
+            inventory = inventory_string(lvl->player, MESSAGE_LENGTH);
+            //ASK Why are these two steps? print_message() is also a wrapper
+            snprintf(message, MESSAGE_LENGTH, "Your inventory contains: %s", inventory);
             print_message(message);
             free((void*)inventory);
             break;
@@ -187,8 +215,8 @@ int get_input(level *lvl) {
             break;
         case 'r':
             rotate_inventory(lvl->player);
-            inventory = inventory_string(lvl->player, 200);
-            snprintf(message, 200, "Your inventory contains: %s", inventory);
+            inventory = inventory_string(lvl->player, MESSAGE_LENGTH);
+            snprintf(message, MESSAGE_LENGTH, "Your inventory contains: %s", inventory);
             print_message(message);
             free((void*)inventory);
             break;
@@ -207,7 +235,7 @@ int get_input(level *lvl) {
             break;
         case 'e':
             if (((item*)lvl->player)->contents != NULL) {
-                snprintf(message, 200, "wood: %d fire: %d ash: %d",
+                snprintf(message, MESSAGE_LENGTH, "wood: %d fire: %d ash: %d",
                         ((item*)lvl->player)->contents->item->chemistry->elements[wood],
                         ((item*)lvl->player)->contents->item->chemistry->elements[fire],
                         ((item*)lvl->player)->contents->item->chemistry->elements[ash]
@@ -216,7 +244,7 @@ int get_input(level *lvl) {
             }
             break;
         case 's':
-            snprintf(message, 200, "You have %d hit points. venom: %d banz: %d life: %d", ((item*)lvl->player)->health, ((item*)lvl->player)->chemistry->elements[venom], ((item*)lvl->player)->chemistry->elements[banz], ((item*)lvl->player)->chemistry->elements[life]);
+            snprintf(message, MESSAGE_LENGTH, "You have %d hit points. venom: %d banz: %d life: %d", ((item*)lvl->player)->health, ((item*)lvl->player)->chemistry->elements[venom], ((item*)lvl->player)->chemistry->elements[banz], ((item*)lvl->player)->chemistry->elements[life]);
             print_message(message);
             break;
         case 't':
@@ -233,6 +261,7 @@ int get_input(level *lvl) {
 }
 
 void step_chemistry(chemical_system *sys, constituents *chem, constituents *context) {
+    //ASK magic number?
     for (int i = 0; i < 3; i++) {
         bool is_stable = chem->stable;
         if (context != NULL) is_stable = is_stable && context->stable;
@@ -258,6 +287,7 @@ void step_item(level *lvl, item *itm, constituents *chem_ctx) {
 }
 
 void step_mobile(level *lvl, mobile *mob) {
+    //ASK magic numbers in here?
     constituents *chemistry = ((item*)mob)->chemistry;
     if (lvl->chemistry[mob->x][mob->y]->elements[air] > 5) {
         lvl->chemistry[mob->x][mob->y]->elements[air] -= 5;
@@ -287,6 +317,7 @@ void level_step_chemistry(level* lvl) {
                 step_item(lvl, inv->item, lvl->chemistry[x][y]);
                 if (inv->item->health <= 0) {
                     inv->item->name = "Ashy Remnants";
+                    //TODO Hard-coded icon
                     inv->item->display = '~';
                 }
                 inv = inv->next;
@@ -321,6 +352,7 @@ void level_step_chemistry(level* lvl) {
                             int yy = y + (((dy+ry)%3)-1);
                             if (xx >= 0 && xx < lvl->width && yy >= 0 && yy < lvl->height) {
                                 if (lvl->tiles[xx][yy] != WALL && lvl->tiles[xx][yy] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
+                                    //ASK Why not ++?
                                     removed_element[x][y] += 1;
                                     added_element[xx][yy] += 1;
                                 }
