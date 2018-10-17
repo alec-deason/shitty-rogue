@@ -32,9 +32,10 @@ void draw(level *lvl) {
     row -= 1;
 
     // Offset to keep player in center
-    int x_offset = (col / 2) - lvl->player->x;
-    int y_offset = (row / 2) - lvl->player->y;
+    int x_offset = col / 2 - lvl->player->x;
+    int y_offset = row / 2 - lvl->player->y;
 
+    // Draw map and items
     for (int xx = 0; xx < col; xx++) {
         for (int yy = 0; yy < row; yy++) {
             // (xx,yy) are screen coordinates
@@ -44,18 +45,14 @@ void draw(level *lvl) {
 
             char icon = UNSEEN;
 
-            // Only draw squares which comprise the  map
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
-                // Only draw coords which the player can see
+                //TODO wrapper function with clear name
                 if (can_see(lvl, lvl->player, x, y)) {
-                    // Draw square status effects
                     if (lvl->chemistry[x][y]->elements[fire] > 0) {
                         icon = BURNING;
                         attron(COLOR_PAIR(RED));
-                    // Draw items
                     } else if (lvl->items[x][y] != NULL) {
                         icon = lvl->items[x][y]->item->display;
-                    // Draw floor
                     } else {
                         icon = lvl->tiles[x][y];
                     }
@@ -74,7 +71,8 @@ void draw(level *lvl) {
             attroff(COLOR_PAIR(RED));
         }
     }
-    // Mobs don't exist in the map. Coords exist on the mobs.
+
+    // Draw mobs
     for (int i=0; i < lvl->mob_count; i++) {
         mobile* mob = lvl->mobs[i];
         if (mob->active && can_see(lvl, lvl->player, mob->x, mob->y)) {
