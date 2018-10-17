@@ -20,8 +20,6 @@ void draw_mobile(mobile *mob, int x_offset, int y_offset) {
 
     if (mob->emote) {
         icon = mob->emote;
-        //ASK 'false' a good stand-in for 'None'?
-        //ASK Why can't I use 'NULL'?
         mob->emote = false;
     }
 
@@ -31,43 +29,37 @@ void draw_mobile(mobile *mob, int x_offset, int y_offset) {
 void draw(level *lvl) {
     int row,col;
     getmaxyx(stdscr,row,col);
-    //ASK Why decrement row but not column?
     row -= 1;
 
     // Offset to keep player in center
     int x_offset = (col / 2) - lvl->player->x;
     int y_offset = (row / 2) - lvl->player->y;
 
-    //ASK No point to restriction this loop to only map coords?
     for (int xx = 0; xx < col; xx++) {
         for (int yy = 0; yy < row; yy++) {
-            //ASK Declarations inside loops are OK?
-            // (xx,yy) screen coordinates
-            // (x ,y ) map coordinates
+            // (xx,yy) are screen coordinates
+            // (x ,y ) are map coordinates
             int x = xx - x_offset;
             int y = yy - y_offset;
 
             char icon = UNSEEN;
 
-            // Only draw coords which fall within the map
+            // Only draw squares which comprise the  map
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
                 // Only draw coords which the player can see
-                //ASK Splitting this conditional allows for debugging
                 if (can_see(lvl, lvl->player, x, y)) {
-                    // Draw a square status effect
+                    // Draw square status effects
                     if (lvl->chemistry[x][y]->elements[fire] > 0) {
                         icon = BURNING;
-                        //TODO Can we put the colors into the icons?
                         attron(COLOR_PAIR(RED));
-                    // Draw an item
+                    // Draw items
                     } else if (lvl->items[x][y] != NULL) {
                         icon = lvl->items[x][y]->item->display;
-                    // Draw the floor
+                    // Draw floor
                     } else {
                         icon = lvl->tiles[x][y];
                     }
                 }
-                //TODO Icons shouldn't determine what things are, the other way around
                 // Fog of war
                 if (icon == UNSEEN) {
                     icon = lvl->memory[x][y];
@@ -84,28 +76,22 @@ void draw(level *lvl) {
     }
     // Mobs don't exist in the map. Coords exist on the mobs.
     for (int i=0; i < lvl->mob_count; i++) {
-        //ASK Is this a readability alias?
         mobile* mob = lvl->mobs[i];
-        //TODO Make a mob-to-mob wrapper around can_see()
         if (mob->active && can_see(lvl, lvl->player, mob->x, mob->y)) {
-            //ASK God, I hate 0-indexing magic math :(
             if ((0 < mob->y + y_offset && mob->y + y_offset <= row) && (0 < mob->x + x_offset && mob->x + x_offset <= col)) {
                 draw_mobile(mob, x_offset, y_offset);
             }
         }
     }
-    //ASK Tempted to make a draw_player() wrapper
     draw_mobile(lvl->player, x_offset, y_offset);
     move(row, 0);
     clrtoeol();
-    //ASK Should be a print banner function, probably
     mvprintw(row, 0, message_banner);
 }
 
-//ASK I find naming things 'print' when they actually prep/load/whatever confusing
-//TODO When the same message (e.g. quaff) is repeated, it should be clear somehow
+//TODO When the same message (e.g. quaff) is repeated, it
+//should be clear somehow that there were multiple messages
 void print_message(char *msg) {
-    //ASK Why does this function exist? 
     strncpy(message_banner, msg, MESSAGE_LENGTH);
 }
 
@@ -177,7 +163,8 @@ void toggle_door(level *lvl, mobile *mob) {
 }
 
 int get_input(level *lvl) {
-    //TODO Don't advance on any key. Have explicit "wait" key (e.g. <SPACE>)
+    //TODO Don't advance turn on any key press.
+    //Have explicit "wait" key (e.g. <SPACE>)
     char *inventory;
     char *message = malloc(sizeof(char)*MESSAGE_LENGTH);
     int input = getch();
@@ -202,7 +189,6 @@ int get_input(level *lvl) {
             break;
         case 'i':
             inventory = inventory_string(lvl->player, MESSAGE_LENGTH);
-            //ASK Why are these two steps? print_message() is also a wrapper
             snprintf(message, MESSAGE_LENGTH, "Your inventory contains: %s", inventory);
             print_message(message);
             free((void*)inventory);
@@ -261,7 +247,6 @@ int get_input(level *lvl) {
 }
 
 void step_chemistry(chemical_system *sys, constituents *chem, constituents *context) {
-    //ASK magic number?
     for (int i = 0; i < 3; i++) {
         bool is_stable = chem->stable;
         if (context != NULL) is_stable = is_stable && context->stable;
@@ -287,7 +272,6 @@ void step_item(level *lvl, item *itm, constituents *chem_ctx) {
 }
 
 void step_mobile(level *lvl, mobile *mob) {
-    //ASK magic numbers in here?
     constituents *chemistry = ((item*)mob)->chemistry;
     if (lvl->chemistry[mob->x][mob->y]->elements[air] > 5) {
         lvl->chemistry[mob->x][mob->y]->elements[air] -= 5;
@@ -352,7 +336,6 @@ void level_step_chemistry(level* lvl) {
                             int yy = y + (((dy+ry)%3)-1);
                             if (xx >= 0 && xx < lvl->width && yy >= 0 && yy < lvl->height) {
                                 if (lvl->tiles[xx][yy] != WALL && lvl->tiles[xx][yy] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
-                                    //ASK Why not ++?
                                     removed_element[x][y] += 1;
                                     added_element[xx][yy] += 1;
                                 }
@@ -388,7 +371,7 @@ int main() {
         initscr();
 
         if (! init_colors()) {
-            // would be nice to print terminal var here
+            //TODO print TERM environment variable
             fprintf(stderr, "Terminal does not support color.\n");
             exit(1);
         }
@@ -432,7 +415,7 @@ int main() {
                 break;
             }
 
-            // Reset message
+            // Clear message
             print_message("");
 
         } while (get_input(lvl) == 0);
