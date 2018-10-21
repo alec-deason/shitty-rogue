@@ -18,7 +18,7 @@ LDLIBS = -lcurses -lm
 all: depend game
 
 # this project contains multiple C files, which are dependent on header files that we find using makedepend, so header files  are not listed here
-SRCS  = game.c level/level.c mob/mob.c chemistry/chemistry.c colors/colors.c los/los.c simulation/vector.c simulation/min_heap.c simulation/simulation.c
+SRCS  = game.c level/level.c mob/mob.c chemistry/chemistry.c colors/colors.c los/los.c simulation/vector.c simulation/min_heap.c simulation/simulation.c log.c
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 # this target is dependent on all objects
@@ -71,7 +71,7 @@ wtf:
 errors:
 	mkfifo errors
 run: strict errors
-	./game 2> errors || reset
+	SHITTY_LOG=1 ./game 2> errors || reset
 # This only checks that "errors" exists, not whether it's a pipe
 console: errors
 	tail -f errors 
@@ -111,7 +111,7 @@ game.o: /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h
 game.o: /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h
 game.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
 game.o: /usr/include/unctrl.h /usr/include/curses.h /usr/include/string.h
-game.o: /usr/include/strings.h game.h level/level.h game.h mob/mob.h
+game.o: /usr/include/strings.h game.h log.h level/level.h game.h mob/mob.h
 game.o: simulation/simulation.h simulation/min_heap.h simulation/vector.h
 game.o: simulation/vector.h chemistry/chemistry.h los/los.h
 game.o: /usr/include/math.h /usr/include/bits/math-vector.h
@@ -167,7 +167,7 @@ level/level.o: /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h
 level/level.o: /usr/include/bits/stdlib-float.h game.h mob/mob.h
 level/level.o: simulation/simulation.h simulation/min_heap.h
 level/level.o: simulation/vector.h simulation/vector.h chemistry/chemistry.h
-level/level.o: los/los.h /usr/include/assert.h
+level/level.o: los/los.h /usr/include/assert.h log.h
 mob/mob.o: /usr/include/limits.h /usr/include/bits/libc-header-start.h
 mob/mob.o: /usr/include/features.h /usr/include/stdc-predef.h
 mob/mob.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
@@ -435,3 +435,13 @@ simulation/simulation.o: /usr/include/bits/iscanonical.h
 simulation/simulation.o: simulation/simulation.h simulation/min_heap.h
 simulation/simulation.o: simulation/vector.h /usr/include/string.h
 simulation/simulation.o: /usr/include/strings.h
+log.o: /usr/include/stdio.h /usr/include/bits/libc-header-start.h
+log.o: /usr/include/features.h /usr/include/stdc-predef.h
+log.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
+log.o: /usr/include/bits/long-double.h /usr/include/gnu/stubs.h
+log.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+log.o: /usr/include/bits/types/__fpos_t.h
+log.o: /usr/include/bits/types/__mbstate_t.h
+log.o: /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h
+log.o: /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h
+log.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h log.h

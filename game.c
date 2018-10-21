@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "game.h"
+#include "log.h"
 #include "level/level.h"
 #include "mob/mob.h"
 #include "simulation/simulation.h"
@@ -364,13 +365,16 @@ int main() {
         int ch;
         int turn = 0;
         level *lvl;
+        const char* do_log = getenv("SHITTY_LOG");
+
+        if (do_log != NULL) logging_active = true;
 
         srand(time(NULL));
         initscr();
 
         if (! init_colors()) {
             //TODO print TERM environment variable
-            fprintf(stderr, "Terminal does not support color.\n");
+            logger("Terminal does not support color.\n");
             exit(1);
         }
 
@@ -386,7 +390,7 @@ int main() {
 
         // Main Loop
         do {
-            fprintf(stderr, "=== Turn %3d ============================================\n", turn++);
+            logger("=== Turn %3d ============================================\n", turn++);
             turn++;
             sync_simulation(lvl->sim, turn*TICKS_PER_TURN);
 
