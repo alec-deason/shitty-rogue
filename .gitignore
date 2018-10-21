@@ -4,5 +4,6 @@ a.out
 test_suite
 .gdb_history
 Makefile.bak
+.d
 game
 *.o
