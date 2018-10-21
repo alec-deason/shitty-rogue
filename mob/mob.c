@@ -81,33 +81,9 @@ char* inventory_string(mobile* mob, int len) {
     return str;
 }
 
-void rotate_inventory(mobile* mob) {
-    if (((item*)mob)->contents != NULL && ((item*)mob)->contents->next != NULL) {
-        inventory_item *itm = ((item*)mob)->contents;
-        while (itm->next->next != NULL) itm = itm->next;
-        inventory_item *last = itm->next;
-        itm->next = NULL;
-        last->next = ((item*)mob)->contents;
-        ((item*)mob)->contents = last;
-    }
-}
-
 void destroy_item(item *itm) {
     destroy_constituents(itm->chemistry);
     free((void*)itm);
-}
-
-bool quaff(mobile* mob) {
-    inventory_item* inv = ((item*)mob)->contents;
-    if (inv != NULL && inv->item->type == Potion) {
-        add_constituents(((item*)mob)->chemistry, inv->item->chemistry);
-        destroy_item(inv->item);
-        ((item*)mob)->contents = inv->next;
-        ((item*)mob)->chemistry->stable = false;
-        free((void*)inv);
-        return true;
-    }
-    return false;
 }
 
 int never_next_firing(void *context, void* mob, struct event_listener *listeners) {

@@ -9,4 +9,12 @@ extern char message_banner[MESSAGE_LENGTH];
 
 void print_message(char *msg);
 
+typedef enum direction {
+    up,
+    right,
+    down,
+    left,
+    no_direction
+} direction;
+
 #endif
