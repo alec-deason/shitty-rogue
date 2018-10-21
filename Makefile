@@ -89,7 +89,7 @@ wtf:
 errors:
 	mkfifo errors
 run: strict errors
-	./game 2> errors || reset
+	SHITTY_LOG=true ./game 2> errors || reset
 # This only checks that "errors" exists, not whether it's a pipe
 console: errors
 	tail -f errors 

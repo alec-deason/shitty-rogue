@@ -57,9 +57,6 @@ item* pop_inventory(mobile* mob);
 char* inventory_string(mobile* mob, int len);
 void destroy_item(item *itm);
 
-void rotate_inventory(mobile* mob);
-bool quaff(mobile* mob);
-
 void item_deal_damage(struct Level *lvl, item* itm, unsigned int amount);
 
 int never_next_firing(void *context, void* mob, struct event_listener *listeners);
