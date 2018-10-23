@@ -69,8 +69,8 @@ static void partition(level *lvl);
 
 level* make_level(void) {
     level *lvl = malloc(sizeof *lvl);
-    int level_width = LVL_WIDTH;
-    int level_height = LVL_HEIGHT;
+    int level_width = MAX_MAP_WIDTH;
+    int level_height = MAX_MAP_HEIGHT;
 
     lvl->width = level_width;
     lvl->height = level_height;
@@ -101,7 +101,7 @@ level* make_level(void) {
     for(int i = 1; i < level_width; i++)
         lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
     for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->memory[x][y] = UNSEEN;
+        lvl->memory[x][y] = TILE_UNSEEN;
         lvl->chemistry[x][y] = make_constituents();
         lvl->chemistry[x][y]->elements[air] = 20;
     }
@@ -278,7 +278,7 @@ static void partition(level *lvl) {
 
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
-            lvl->tiles[x][y] = FLOOR;
+            lvl->tiles[x][y] = TILE_FLOOR;
         }
     }
 
@@ -288,9 +288,9 @@ static void partition(level *lvl) {
                 int xx = x+dx;
                 int yy = y+dy;
                 if (xx < 0 || yy < 0 || xx >= lvl->width -1 || yy >= lvl->height -1) {
-                    lvl->tiles[x][y] = WALL;
+                    lvl->tiles[x][y] = TILE_WALL;
                 } else if (partitioning[xx][yy] != partitioning[x][y]) {
-                    lvl->tiles[x][y] = WALL;
+                    lvl->tiles[x][y] = TILE_WALL;
                     if (abs(dx+dy) == 1) {
                         potential_doors[x][y] = true;
                     }
@@ -308,12 +308,12 @@ static void partition(level *lvl) {
                 bool door_needed = false;
                 bool door_possible = false;
                 int rm_a, rm_b;
-                if (x+1 < lvl->width && x-1 >= 0 && lvl->tiles[x+1][y] != WALL && lvl->tiles[x-1][y] != WALL) {
+                if (x+1 < lvl->width && x-1 >= 0 && lvl->tiles[x+1][y] != TILE_WALL && lvl->tiles[x-1][y] != TILE_WALL) {
                     rm_a = partitioning[x+1][y];
                     rm_b = partitioning[x-1][y];
                     door_possible = true;
                 }
-                if (y+1 < lvl->height && y-1 >= 0 && lvl->tiles[x][y+1] != WALL && lvl->tiles[x][y-1] != WALL) {
+                if (y+1 < lvl->height && y-1 >= 0 && lvl->tiles[x][y+1] != TILE_WALL && lvl->tiles[x][y-1] != TILE_WALL) {
                     rm_a = partitioning[x][y+1];
                     rm_b = partitioning[x][y-1];
                     door_possible = true;
@@ -326,9 +326,9 @@ static void partition(level *lvl) {
                     }
                 }
                 if (door_needed) {
-                    lvl->tiles[x][y] = OPEN_DOOR;
+                    lvl->tiles[x][y] = DOOR_OPEN;
                 } else {
-                    lvl->tiles[x][y] = WALL;
+                    lvl->tiles[x][y] = TILE_WALL;
                 }
             }
         }
@@ -372,7 +372,7 @@ bool is_position_valid(level *lvl, int x, int y) {
     } else if (y >= lvl->height || y < 0) {
         fprintf(stderr, "ERROR %s: %s: %d\n", "is_position_valid", "y is out of bounds", y);
         return false;
-    } else if (lvl->tiles[x][y] == WALL || lvl->tiles[x][y] == CLOSED_DOOR) {
+    } else if (lvl->tiles[x][y] == TILE_WALL || lvl->tiles[x][y] == DOOR_CLOSED) {
         // from a performance standpoint, this should be the first test
         return false;
     } else {

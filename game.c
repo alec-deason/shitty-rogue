@@ -8,9 +8,7 @@
 #include "mob/mob.h"
 #include "simulation/simulation.h"
 #include "los/los.h"
-#include "colors/colors.h"
-
-#define MESSAGE_LENGTH 200
+#include "color/color.h"
 
 int keyboard_x = 0, keyboard_y = 0;
 char message_banner[MESSAGE_LENGTH];
@@ -43,13 +41,13 @@ void draw(level *lvl) {
             int x = xx - x_offset;
             int y = yy - y_offset;
 
-            char icon = UNSEEN;
+            char icon = TILE_UNSEEN;
 
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
                 //TODO wrapper function with clear name
                 if (can_see(lvl, lvl->player, x, y)) {
                     if (lvl->chemistry[x][y]->elements[fire] > 0) {
-                        icon = BURNING;
+                        icon = STATUS_BURNING;
                         attron(COLOR_PAIR(RED));
                     } else if (lvl->items[x][y] != NULL) {
                         icon = lvl->items[x][y]->item->display;
@@ -58,7 +56,7 @@ void draw(level *lvl) {
                     }
                 }
                 // Fog of war
-                if (icon == UNSEEN) {
+                if (icon == TILE_UNSEEN) {
                     icon = lvl->memory[x][y];
                     attron(COLOR_PAIR(YELLOW));
                 } else {
@@ -117,7 +115,7 @@ void pickup_item(level *lvl, mobile *mob) {
     }
 }
 
-void smash(level *lvl, mobile *mob) {
+void smash_potion(level *lvl, mobile *mob) {
     item *potion = ((item*)mob)->contents->item;
     add_constituents(lvl->chemistry[mob->x][mob->y], potion->chemistry);
     inventory_item *inv = ((item*)mob)->contents;
@@ -126,7 +124,7 @@ void smash(level *lvl, mobile *mob) {
     destroy_item(potion);
 }
 
-void print_location_elements(level *lvl, mobile *mob) {
+void print_tile_elements(level *lvl, mobile *mob) {
     char *message = malloc(sizeof(char)*MESSAGE_LENGTH);
     constituents *chem = lvl->chemistry[mob->x][mob->y];
     snprintf(message, MESSAGE_LENGTH, "wood: %d air: %d fire: %d", chem->elements[wood], chem->elements[air], chem->elements[fire]);
@@ -153,10 +151,10 @@ void toggle_door(level *lvl, mobile *mob) {
         default:
             return;
     }
-    if (lvl->tiles[x][y] == OPEN_DOOR) {
-        lvl->tiles[x][y] = CLOSED_DOOR;
-    } else if (lvl->tiles[x][y] == CLOSED_DOOR) {
-        lvl->tiles[x][y] = OPEN_DOOR;
+    if (lvl->tiles[x][y] == DOOR_OPEN) {
+        lvl->tiles[x][y] = DOOR_CLOSED;
+    } else if (lvl->tiles[x][y] == DOOR_CLOSED) {
+        lvl->tiles[x][y] = DOOR_OPEN;
     }
 }
 
@@ -200,7 +198,7 @@ int get_input(level *lvl) {
         case 'r':
             rotate_inventory(lvl->player);
             inventory = inventory_string(lvl->player, MESSAGE_LENGTH);
-            snprintf(message, MESSAGE_LENGTH, "Your inventory contains: %s", inventory);
+            snprintf(message, MESSAGE_LENGTH, "Currently selected item -> %s", inventory);
             print_message(message);
             free((void*)inventory);
             break;
@@ -213,7 +211,7 @@ int get_input(level *lvl) {
             break;
         case 'v':
             if (((item*)lvl->player)->contents != NULL && ((item*)lvl->player)->contents->item->type == Potion) {
-                smash(lvl, lvl->player);
+                smash_potion(lvl, lvl->player);
                 print_message("You smash the potion on the floor.");
             } else print_message("That isn't a potion.");
             break;
@@ -232,7 +230,7 @@ int get_input(level *lvl) {
             print_message(message);
             break;
         case 't':
-            print_location_elements(lvl, lvl->player);
+            print_tile_elements(lvl, lvl->player);
             break;
         case 'o':
             toggle_door(lvl, lvl->player);
@@ -304,11 +302,12 @@ void level_step_chemistry(level* lvl) {
                 }
                 inv = inv->next;
             }
-            if (lvl->tiles[x][y] != WALL && lvl->tiles[x][y] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[air] < 20) lvl->chemistry[x][y]->elements[air] += 3;
+            //TODO make constants? tiles regen 3 air if they are below 20?
+            if (lvl->tiles[x][y] != TILE_WALL && lvl->tiles[x][y] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[air] < 20) lvl->chemistry[x][y]->elements[air] += 3;
         }
     }
     for (int element = 0; element < ELEMENT_COUNT; element++) {
-        if (lvl->chem_sys->volitile[element]) {
+        if (lvl->chem_sys->is_volatile[element]) {
             int **added_element = malloc(lvl->width * sizeof(int*));
             added_element[0] = malloc(lvl->height * lvl->width * sizeof(int));
             int **removed_element = malloc(lvl->width * sizeof(int*));
@@ -324,6 +323,8 @@ void level_step_chemistry(level* lvl) {
                 }
             }
 
+            //ASK I cannot tell whether these are magic numbers or not
+            //because I have no idea what's going on here.
             for (int x = 0; x < lvl->width; x++) {
                 for (int y = 0; y < lvl->height; y++) {
                     int rx = rand();
@@ -333,7 +334,7 @@ void level_step_chemistry(level* lvl) {
                         for (int dy = 0; dy < 2; dy++) {
                             int yy = y + (((dy+ry)%3)-1);
                             if (xx >= 0 && xx < lvl->width && yy >= 0 && yy < lvl->height) {
-                                if (lvl->tiles[xx][yy] != WALL && lvl->tiles[xx][yy] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
+                                if (lvl->tiles[xx][yy] != TILE_WALL && lvl->tiles[xx][yy] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
                                     removed_element[x][y] += 1;
                                     added_element[xx][yy] += 1;
                                 }
@@ -409,6 +410,7 @@ int main() {
 
             // If the player is dead, wait for input
             if (!lvl->player->active) {
+                //TODO Require explicit input to really create a pause
                 getch();
                 break;
             }

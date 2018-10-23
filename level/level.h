@@ -10,16 +10,6 @@
 #include "../simulation/simulation.h"
 #include "../los/los.h"
 
-#define LVL_WIDTH 80;
-#define LVL_HEIGHT 40;
-
-#define WALL '#'
-#define FLOOR '.'
-#define UNSEEN ' '
-#define OPEN_DOOR '-' // doors are blank
-#define CLOSED_DOOR '+'
-#define BURNING '*'
-
 typedef struct Level {
     unsigned char **tiles;
     unsigned char **memory;

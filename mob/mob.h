@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+//TODO Only include what this file needs?
+#include "../game_cfg/game_cfg.h"
 #include "../simulation/simulation.h"
 #include "../simulation/vector.h"
 #include "../chemistry/chemistry.h"
@@ -39,16 +41,6 @@ typedef struct Mobile {
     char emote;
     void *state;
 } mobile;
-
-#define ICON_HUMAN '@'
-#define ICON_GOBLIN 'o'
-#define ICON_ORC 'O'
-#define ICON_UMBER_HULK_AWAKE 'U'
-#define ICON_UMBER_HULK_ASLEEP 'z'
-#define ICON_MINOTAUR 'M'
-
-#define EMOTE_OUCH '!'
-#define EMOTE_ANGRY '%'
 
 mobile* make_mob();
 void destroy_mob(mobile *mob);

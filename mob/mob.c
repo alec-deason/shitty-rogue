@@ -8,7 +8,7 @@
 
 mobile* make_mob(struct Level *lvl) {
     mobile *mob = malloc(sizeof(mobile));
-    ((item*)mob)->display = ' ';
+    ((item*)mob)->display = ICON_UNDEFINED;
     ((item*)mob)->chemistry = make_constituents();
     ((item*)mob)->type = Creature;
     mob->state = NULL;

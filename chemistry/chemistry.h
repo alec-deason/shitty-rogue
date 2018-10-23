@@ -31,7 +31,7 @@ typedef struct reaction {
 typedef struct chemical_system {
     reaction* reactions;
     int num_reactions;
-    bool volitile[ELEMENT_COUNT];
+    bool is_volatile[ELEMENT_COUNT];
 } chemical_system;
 
 constituents* make_constituents();

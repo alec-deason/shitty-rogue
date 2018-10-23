@@ -1,5 +1,5 @@
 #include <ncurses.h>
-#include "colors.h"
+#include "color.h"
 
 bool init_colors() {
     // use can_change_color() instead?
