@@ -1,7 +1,7 @@
 # supported targets:
 #   all, <default>: update dependencies on .h files, then build game
-#   run: build strict, then execute with stderr redirected to errors FIFO
-#   console: run error console printing contents of errors FIFO
+#   run: build strict, then execute with stderr redirected to .errors FIFO
+#   console: run error console printing contents of .errors FIFO
 #   game: just build game without updating dependencies
 #   depend: explicitly rebuild dependencies
 #   ansic: test compile as ANSI C
@@ -18,7 +18,7 @@ LDLIBS = -lcurses -lm
 all: depend game
 
 # this project contains multiple C files, which are dependent on header files that we find using makedepend, so header files  are not listed here
-SRCS  = game.c level/level.c mob/mob.c chemistry/chemistry.c colors/colors.c los/los.c simulation/vector.c simulation/min_heap.c simulation/simulation.c log.c
+SRCS  = game.c level/level.c mob/mob.c chemistry/chemistry.c color/color.c los/los.c simulation/vector.c simulation/min_heap.c simulation/simulation.c log.c
 OBJS := $(patsubst %.c,%.o,$(SRCS))
 
 # this target is dependent on all objects
@@ -41,7 +41,7 @@ strict:
 debug:
 	$(MAKE) clean
 	$(MAKE) CFLAGS="-g" LDFLAGS="-g" game
-	gdb ./game 2> errors || reset
+	gdb ./game 2> .errors || reset
 
 # clean up stuff, one step (note steps are tab-indented lines, each of which is executed as shell command in a subprocess using $(SHELL)
 # as the executable)
@@ -68,13 +68,13 @@ wtf:
 		-e 'COMPILE.c =' \
 		-e 'LINK.c ='
 
-errors:
-	mkfifo errors
-run: strict errors
-	ENABLE_LOG=1 ./game 2> errors || reset
+.errors:
+	mkfifo .errors
+run: strict .errors
+	ENABLE_LOG=1 ./game 2> .errors || reset
 # This only checks that "errors" exists, not whether it's a pipe
-console: errors
-	tail -f errors 
+console: .errors
+	tail -f .errors 
 
 # DO NOT DELETE
 
@@ -111,7 +111,9 @@ game.o: /usr/include/bits/types/__fpos64_t.h /usr/include/bits/types/__FILE.h
 game.o: /usr/include/bits/types/FILE.h /usr/include/bits/types/struct_FILE.h
 game.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
 game.o: /usr/include/unctrl.h /usr/include/curses.h /usr/include/string.h
-game.o: /usr/include/strings.h game.h log.h level/level.h game.h mob/mob.h
+game.o: /usr/include/strings.h game.h game_cfg/game_cfg.h game_cfg/colors.h
+game.o: game_cfg/game_internals.h game_cfg/setup.h game_cfg/symbols.h log.h
+game.o: level/level.h game.h mob/mob.h game_cfg/game_cfg.h
 game.o: simulation/simulation.h simulation/min_heap.h simulation/vector.h
 game.o: simulation/vector.h chemistry/chemistry.h los/los.h
 game.o: /usr/include/math.h /usr/include/bits/math-vector.h
@@ -121,7 +123,7 @@ game.o: /usr/include/bits/fp-fast.h
 game.o: /usr/include/bits/mathcalls-helper-functions.h
 game.o: /usr/include/bits/mathcalls.h /usr/include/bits/mathcalls-narrow.h
 game.o: /usr/include/bits/iscanonical.h /usr/include/assert.h mob/mob.h
-game.o: simulation/simulation.h los/los.h colors/colors.h
+game.o: simulation/simulation.h los/los.h color/color.h game_cfg/colors.h
 level/level.o: /usr/include/stdio.h /usr/include/bits/libc-header-start.h
 level/level.o: /usr/include/features.h /usr/include/stdc-predef.h
 level/level.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
@@ -165,9 +167,9 @@ level/level.o: /usr/include/bits/pthreadtypes.h
 level/level.o: /usr/include/bits/thread-shared-types.h
 level/level.o: /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h
 level/level.o: /usr/include/bits/stdlib-float.h game.h mob/mob.h
-level/level.o: simulation/simulation.h simulation/min_heap.h
-level/level.o: simulation/vector.h simulation/vector.h chemistry/chemistry.h
-level/level.o: los/los.h /usr/include/assert.h log.h
+level/level.o: game_cfg/game_cfg.h simulation/simulation.h
+level/level.o: simulation/min_heap.h simulation/vector.h simulation/vector.h
+level/level.o: chemistry/chemistry.h los/los.h /usr/include/assert.h log.h
 mob/mob.o: /usr/include/limits.h /usr/include/bits/libc-header-start.h
 mob/mob.o: /usr/include/features.h /usr/include/stdc-predef.h
 mob/mob.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
@@ -204,9 +206,9 @@ mob/mob.o: /usr/include/bits/types/struct_timespec.h
 mob/mob.o: /usr/include/bits/pthreadtypes.h
 mob/mob.o: /usr/include/bits/thread-shared-types.h
 mob/mob.o: /usr/include/bits/pthreadtypes-arch.h /usr/include/alloca.h
-mob/mob.o: /usr/include/bits/stdlib-float.h simulation/simulation.h
-mob/mob.o: simulation/min_heap.h simulation/vector.h /usr/include/string.h
-mob/mob.o: /usr/include/bits/types/locale_t.h
+mob/mob.o: /usr/include/bits/stdlib-float.h game_cfg/game_cfg.h
+mob/mob.o: simulation/simulation.h simulation/min_heap.h simulation/vector.h
+mob/mob.o: /usr/include/string.h /usr/include/bits/types/locale_t.h
 mob/mob.o: /usr/include/bits/types/__locale_t.h /usr/include/strings.h
 mob/mob.o: simulation/vector.h chemistry/chemistry.h level/level.h mob/mob.h
 mob/mob.o: los/los.h /usr/include/assert.h
@@ -252,23 +254,23 @@ chemistry/chemistry.o: /usr/include/bits/thread-shared-types.h
 chemistry/chemistry.o: /usr/include/bits/pthreadtypes-arch.h
 chemistry/chemistry.o: /usr/include/alloca.h /usr/include/bits/stdlib-float.h
 chemistry/chemistry.o: chemistry/chemistry.h
-colors/colors.o: /usr/include/ncurses.h /usr/include/ncurses_dll.h
-colors/colors.o: /usr/include/stdint.h /usr/include/bits/libc-header-start.h
-colors/colors.o: /usr/include/features.h /usr/include/stdc-predef.h
-colors/colors.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
-colors/colors.o: /usr/include/bits/long-double.h /usr/include/gnu/stubs.h
-colors/colors.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
-colors/colors.o: /usr/include/bits/wchar.h /usr/include/bits/stdint-intn.h
-colors/colors.o: /usr/include/bits/stdint-uintn.h /usr/include/stdio.h
-colors/colors.o: /usr/include/bits/types/__fpos_t.h
-colors/colors.o: /usr/include/bits/types/__mbstate_t.h
-colors/colors.o: /usr/include/bits/types/__fpos64_t.h
-colors/colors.o: /usr/include/bits/types/__FILE.h
-colors/colors.o: /usr/include/bits/types/FILE.h
-colors/colors.o: /usr/include/bits/types/struct_FILE.h
-colors/colors.o: /usr/include/bits/stdio_lim.h
-colors/colors.o: /usr/include/bits/sys_errlist.h /usr/include/unctrl.h
-colors/colors.o: /usr/include/curses.h colors/colors.h
+color/color.o: /usr/include/ncurses.h /usr/include/ncurses_dll.h
+color/color.o: /usr/include/stdint.h /usr/include/bits/libc-header-start.h
+color/color.o: /usr/include/features.h /usr/include/stdc-predef.h
+color/color.o: /usr/include/sys/cdefs.h /usr/include/bits/wordsize.h
+color/color.o: /usr/include/bits/long-double.h /usr/include/gnu/stubs.h
+color/color.o: /usr/include/bits/types.h /usr/include/bits/typesizes.h
+color/color.o: /usr/include/bits/wchar.h /usr/include/bits/stdint-intn.h
+color/color.o: /usr/include/bits/stdint-uintn.h /usr/include/stdio.h
+color/color.o: /usr/include/bits/types/__fpos_t.h
+color/color.o: /usr/include/bits/types/__mbstate_t.h
+color/color.o: /usr/include/bits/types/__fpos64_t.h
+color/color.o: /usr/include/bits/types/__FILE.h
+color/color.o: /usr/include/bits/types/FILE.h
+color/color.o: /usr/include/bits/types/struct_FILE.h
+color/color.o: /usr/include/bits/stdio_lim.h /usr/include/bits/sys_errlist.h
+color/color.o: /usr/include/unctrl.h /usr/include/curses.h color/color.h
+color/color.o: game_cfg/colors.h
 los/los.o: los/los.h /usr/include/math.h
 los/los.o: /usr/include/bits/libc-header-start.h /usr/include/features.h
 los/los.o: /usr/include/stdc-predef.h /usr/include/sys/cdefs.h

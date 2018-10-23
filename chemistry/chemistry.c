@@ -27,9 +27,9 @@ chemical_system* make_default_chemical_system() {
         }
     }
 
-    for (int i = 0; i < ELEMENT_COUNT; i++) sys->volitile[i] = false;
-    sys->volitile[fire] = true;
-    sys->volitile[air] = true;
+    for (int i = 0; i < ELEMENT_COUNT; i++) sys->is_volatile[i] = false;
+    sys->is_volatile[fire] = true;
+    sys->is_volatile[air] = true;
 
     // Burning
     sys->reactions[1].input.elements[wood] = 5;
