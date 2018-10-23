@@ -52,7 +52,7 @@ void mob_pickup_item(level *lvl, mobile *mob) {
     }
 }
 
-void mob_smash(level *lvl, mobile *mob) {
+void mob_smash_potion(level *lvl, mobile *mob) {
     item *potion = ((item*)mob)->contents->item;
     add_constituents(lvl->chemistry[mob->x][mob->y], potion->chemistry);
     inventory_item *inv = ((item*)mob)->contents;

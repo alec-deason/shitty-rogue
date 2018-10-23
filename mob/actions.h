@@ -10,6 +10,6 @@ bool mob_quaff(mobile* mob);
 void mob_drop_item(level *lvl, mobile *mob);
 void mob_toggle_door(level *lvl, mobile *mob, direction dir);
 void mob_pickup_item(level *lvl, mobile *mob);
-void mob_smash(level *lvl, mobile *mob);
+void mob_smash_potion(level *lvl, mobile *mob);
 
 #endif
