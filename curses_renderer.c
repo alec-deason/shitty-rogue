@@ -6,6 +6,7 @@
 #include "log.h"
 #include "curses_renderer.h"
 #include "log.h"
+#include "color/color.h"
 
 
 char message_banner[MESSAGE_LENGTH];
@@ -13,8 +14,7 @@ char message_banner[MESSAGE_LENGTH];
 void init_rendering_system(void) {
     initscr();
 
-    init_colors();
-    if(!has_colors()) {
+    if(!init_colors()) {
         //TODO print TERM environment variable
         logger("Terminal does not support color.\n");
         exit(1);

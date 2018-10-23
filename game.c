@@ -11,7 +11,6 @@
 #include "input.h"
 #include "simulation/simulation.h"
 #include "los/los.h"
-#include "color/color.h"
 
 #define TILE_AIR_REGEN_THRESHOLD 20
 #define TILE_AIR_REGEN_RATE 3
