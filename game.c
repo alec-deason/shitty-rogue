@@ -365,7 +365,7 @@ int main() {
         int ch;
         int turn = 0;
         level *lvl;
-        const char* do_log = getenv("SHITTY_LOG");
+        const char* do_log = getenv("ENABLE_LOG");
 
         if (do_log != NULL) logging_active = true;
 
