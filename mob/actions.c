@@ -21,10 +21,10 @@ void mob_toggle_door(level *lvl, mobile *mob, direction dir) {
         default:
             return;
     }
-    if (lvl->tiles[x][y] == OPEN_DOOR) {
-        lvl->tiles[x][y] = CLOSED_DOOR;
-    } else if (lvl->tiles[x][y] == CLOSED_DOOR) {
-        lvl->tiles[x][y] = OPEN_DOOR;
+    if (lvl->tiles[x][y] == DOOR_OPEN) {
+        lvl->tiles[x][y] = DOOR_CLOSED;
+    } else if (lvl->tiles[x][y] == DOOR_CLOSED) {
+        lvl->tiles[x][y] = DOOR_OPEN;
     }
 }
 

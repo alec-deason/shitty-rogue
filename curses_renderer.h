@@ -1,6 +1,7 @@
 #ifndef CURSES_RENDERER_H
 #define CURSES_RENDERER_H
 
+#include "game.h"
 #include "level/level.h"
 
 void init_rendering_system(void);

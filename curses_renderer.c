@@ -6,7 +6,6 @@
 #include "log.h"
 #include "curses_renderer.h"
 #include "log.h"
-#include "colors/colors.h"
 
 
 char message_banner[MESSAGE_LENGTH];
@@ -14,7 +13,8 @@ char message_banner[MESSAGE_LENGTH];
 void init_rendering_system(void) {
     initscr();
 
-    if (! init_colors()) {
+    init_colors();
+    if(!has_colors()) {
         //TODO print TERM environment variable
         logger("Terminal does not support color.\n");
         exit(1);
@@ -73,13 +73,13 @@ void draw_level(level *lvl) {
             int x = xx - x_offset;
             int y = yy - y_offset;
 
-            char icon = UNSEEN;
+            char icon = TILE_UNSEEN;
 
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
                 //TODO wrapper function with clear name
                 if (can_see(lvl, lvl->player, x, y)) {
                     if (lvl->chemistry[x][y]->elements[fire] > 0) {
-                        icon = BURNING;
+                        icon = STATUS_BURNING;
                         attron(COLOR_PAIR(RED));
                     } else if (lvl->items[x][y] != NULL) {
                         icon = lvl->items[x][y]->item->display;
@@ -88,7 +88,7 @@ void draw_level(level *lvl) {
                     }
                 }
                 // Fog of war
-                if (icon == UNSEEN) {
+                if (icon == TILE_UNSEEN) {
                     icon = lvl->memory[x][y];
                     attron(COLOR_PAIR(YELLOW));
                 } else {

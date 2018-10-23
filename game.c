@@ -11,7 +11,10 @@
 #include "input.h"
 #include "simulation/simulation.h"
 #include "los/los.h"
-#include "colors/colors.h"
+#include "color/color.h"
+
+#define TILE_AIR_REGEN_THRESHOLD 20
+#define TILE_AIR_REGEN_RATE 3
 
 
 void step_chemistry(chemical_system *sys, constituents *chem, constituents *context) {
@@ -69,16 +72,15 @@ void level_step_chemistry(level* lvl) {
                 step_item(lvl, inv->item, lvl->chemistry[x][y]);
                 if (inv->item->health <= 0) {
                     inv->item->name = "Ashy Remnants";
-                    //TODO Hard-coded icon
-                    inv->item->display = '~';
+                    inv->item->display = ICON_ASH;
                 }
                 inv = inv->next;
             }
-            if (lvl->tiles[x][y] != WALL && lvl->tiles[x][y] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[air] < 20) lvl->chemistry[x][y]->elements[air] += 3;
+            if (lvl->tiles[x][y] != TILE_WALL && lvl->tiles[x][y] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[air] < TILE_AIR_REGEN_THRESHOLD) lvl->chemistry[x][y]->elements[air] += TILE_AIR_REGEN_RATE;
         }
     }
     for (int element = 0; element < ELEMENT_COUNT; element++) {
-        if (lvl->chem_sys->volitile[element]) {
+        if (lvl->chem_sys->is_volatile[element]) {
             int **added_element = malloc(lvl->width * sizeof(int*));
             added_element[0] = malloc(lvl->height * lvl->width * sizeof(int));
             int **removed_element = malloc(lvl->width * sizeof(int*));
@@ -94,6 +96,7 @@ void level_step_chemistry(level* lvl) {
                 }
             }
 
+            //TODO Make these variable names descriptive
             for (int x = 0; x < lvl->width; x++) {
                 for (int y = 0; y < lvl->height; y++) {
                     int rx = rand();
@@ -103,7 +106,7 @@ void level_step_chemistry(level* lvl) {
                         for (int dy = 0; dy < 2; dy++) {
                             int yy = y + (((dy+ry)%3)-1);
                             if (xx >= 0 && xx < lvl->width && yy >= 0 && yy < lvl->height) {
-                                if (lvl->tiles[xx][yy] != WALL && lvl->tiles[xx][yy] != CLOSED_DOOR && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
+                                if (lvl->tiles[xx][yy] != TILE_WALL && lvl->tiles[xx][yy] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[element] - removed_element[x][y] > lvl->chemistry[xx][yy]->elements[element] + added_element[xx][yy]) {
                                     removed_element[x][y] += 1;
                                     added_element[xx][yy] += 1;
                                 }
@@ -112,6 +115,7 @@ void level_step_chemistry(level* lvl) {
                     }
                 }
             }
+
             for (int x = 0; x < lvl->width; x++) {
                 for (int y = 0; y < lvl->height; y++) {
                     if (added_element[x][y] > 0 || removed_element[x][y] > 0) {
@@ -134,7 +138,7 @@ int main() {
         int ch;
         int turn = 0;
         level *lvl;
-        const char* do_log = getenv("SHITTY_LOG");
+        const char* do_log = getenv("ENABLE_LOG");
 
         if (do_log != NULL) logging_active = true;
 
@@ -170,6 +174,7 @@ int main() {
 
             // If the player is dead, wait for input
             if (!lvl->player->active) {
+                //TODO Require explicit input to really create a pause
                 get_input(lvl);
                 break;
             }
