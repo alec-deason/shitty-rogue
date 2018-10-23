@@ -3,5 +3,5 @@
 
 #include "level/level.h"
 
-int get_input(level *lvl);
+void get_input(level *lvl);
 #endif

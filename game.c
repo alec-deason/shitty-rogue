@@ -241,7 +241,7 @@ int main() {
         draw(lvl);
 
         // Main Loop
-        do {
+        while (lvl->active) {
             logger("=== Turn %3d ============================================\n", turn++);
             turn++;
             sync_simulation(lvl->sim, turn*TICKS_PER_TURN);
@@ -272,7 +272,8 @@ int main() {
             // Clear message
             print_message("");
 
-        } while (get_input(lvl) == 0);
+            get_input(lvl);
+        }
 
         destroy_level(lvl);
         endwin();
