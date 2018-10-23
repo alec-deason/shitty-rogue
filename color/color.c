@@ -16,16 +16,16 @@ bool init_colors() {
     // Colors: black red green yellow blue magenta cyan white
     //
     // Matching these indices to the tput color indices
-    init_pair(DEFAULT, DEFAULT, DEFAULT);
+    init_pair(ORIG_COLORS, ORIG_COLORS, ORIG_COLORS);
 
-    init_pair(BLACK, COLOR_BLACK, DEFAULT);
-    init_pair(RED, COLOR_RED, DEFAULT);
-    init_pair(GREEN, COLOR_GREEN, DEFAULT);
-    init_pair(YELLOW, COLOR_YELLOW, DEFAULT);
-    init_pair(BLUE, COLOR_BLUE, DEFAULT);
-    init_pair(MAGENTA, COLOR_MAGENTA, DEFAULT);
-    init_pair(CYAN, COLOR_CYAN, DEFAULT);
-    init_pair(WHITE, COLOR_WHITE, DEFAULT);
+    init_pair(BLACK, COLOR_BLACK, ORIG_COLORS);
+    init_pair(RED, COLOR_RED, ORIG_COLORS);
+    init_pair(GREEN, COLOR_GREEN, ORIG_COLORS);
+    init_pair(YELLOW, COLOR_YELLOW, ORIG_COLORS);
+    init_pair(BLUE, COLOR_BLUE, ORIG_COLORS);
+    init_pair(MAGENTA, COLOR_MAGENTA, ORIG_COLORS);
+    init_pair(CYAN, COLOR_CYAN, ORIG_COLORS);
+    init_pair(WHITE, COLOR_WHITE, ORIG_COLORS);
 
     return true;
 }

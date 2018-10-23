@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-//TODO Only include what this file needs?
 #include "../game_cfg/game_cfg.h"
 #include "../simulation/simulation.h"
 #include "../simulation/vector.h"

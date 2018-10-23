@@ -12,19 +12,15 @@ void step_towards(int *x, int *y, int target_x, int target_y, int diagonal) {
     if (abs(dx) > abs(dy)) {
         // need to decrease x
         *x += (*x < target_x ? 1 : -1);
-        //fprintf(stderr, "abs %2d > %2d : (%2d,%2d)\n", dx, dy, *x, *y);
     } else if (abs(dx) < abs(dy)) {
         // need to decrease y
         *y += (*y < target_y ? 1 : -1);
-        //fprintf(stderr, "abs %2d < %2d : (%2d,%2d)\n", dx, dy, *x, *y);
     } else if (rand() % 2 == 0) {
         // pick at random
         // TODO Sometimes mobs will bump into a wall when they don't need to
         *x += (*x < target_x ? 1 : -1);
-        //fprintf(stderr, "abs %2d == %2d (rnd) : (%2d,%2d)\n", dx, dy, *x, *y);
     } else {
         *y += (*y < target_y ? 1 : -1);
-        //fprintf(stderr, "abs %2d == %2d (rnd) : (%2d,%2d)\n", dx, dy, *x, *y);
     }
 }
 
@@ -33,7 +29,6 @@ void update(int *stepper, int *bumper, float slope, int step, int bump, float *e
     // make sure this ends up as a float!
     float ideal = *bumper + *err + slope;
 
-    //fprintf(stderr, "[in](s%2d, b%2d) m %3.2f s %2d b %2d ideal %6.2f err %6.2f", *stepper, *bumper, slope, step, bump, ideal, *err);
 
     // increment the stepper no matter what
     *stepper += step;
@@ -52,7 +47,6 @@ void update(int *stepper, int *bumper, float slope, int step, int bump, float *e
         *err += slope;
     }
 
-    //fprintf(stderr, "[out](s%2d, b%2d) err %6.2f %5.2f\n", *stepper, *bumper, *err, bumped ? 1 : ideal - *bumper);
 }
 
 void next_square(int *x, int *y, int x_direction, float slope, float *err) {
@@ -60,7 +54,6 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
     // This requires slope and err to be passed in so this really can't
     // exist on its own. That feels weird.
 
-    //fprintf(stderr, "%s((%d, %d), x_dir=%d, slope=%.2f, err=%.2f)\n", "next_square", *x, *y, x_direction, slope, *err);
 
     // Handle vertical lines
     if (slope == INFINITY) {
@@ -89,11 +82,9 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
         // Negative slope
             if (fabs(slope) <= 1) {
                 // Octant I
-                //fprintf(stderr, "Octant %-4s ", "I");
                 bump = -1;
             } else {
                 // Octant II
-                //fprintf(stderr, "Octant %-4s ", "II");
                 stepper = y;
                 step = -1;
                 bumper = x;
@@ -104,13 +95,11 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
         // Positive slope
             if (fabs(slope) > 1) {
                 // Octant VII
-                //fprintf(stderr, "Octant %-4s ", "VII");
                 stepper = y;
                 bumper = x;
                 slope = 1 / slope;
             } else {
                 // Octant VIII
-                //fprintf(stderr, "Octant %-4s ", "VIII");
                 // Yay! Lazytown!
             }
         }
@@ -120,7 +109,6 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
         // Positive slope
             if (fabs(slope) > 1) {
                 // Octant III
-                //fprintf(stderr, "Octant %-4s ", "III");
                 stepper = y;
                 bumper = x;
                 step = -1;
@@ -129,7 +117,6 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
                 slope = 1 / slope;
             } else {
                 // Octant IV
-                //fprintf(stderr, "Octant %-4s ", "IV");
                 step = -1;
                 bump = -1;
                 slope *= -1;
@@ -138,12 +125,10 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
         // Negative slope
             if (fabs(slope) <= 1) {
                 // Octant V
-                //fprintf(stderr, "Octant %-4s ", "V");
                 step = -1;
                 slope *= -1;
             } else {
                 // Octant VI
-                //fprintf(stderr, "Octant %-4s ", "VI");
                 stepper = y;
                 bumper = x;
                 bump = -1;
@@ -152,6 +137,5 @@ void next_square(int *x, int *y, int x_direction, float slope, float *err) {
         }
     }
 
-    //fprintf(stderr, "x %c ", (x_direction < 0 ? '<' : '>'));
     update(stepper, bumper, slope, step, bump, err);
 }

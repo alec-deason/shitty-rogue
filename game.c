@@ -4,11 +4,15 @@
 #include <string.h>
 
 #include "game.h"
+#include "log.h"
 #include "level/level.h"
 #include "mob/mob.h"
 #include "simulation/simulation.h"
 #include "los/los.h"
 #include "color/color.h"
+
+#define TILE_AIR_REGEN_THRESHOLD 20
+#define TILE_AIR_REGEN_RATE 3
 
 int keyboard_x = 0, keyboard_y = 0;
 char message_banner[MESSAGE_LENGTH];
@@ -297,13 +301,11 @@ void level_step_chemistry(level* lvl) {
                 step_item(lvl, inv->item, lvl->chemistry[x][y]);
                 if (inv->item->health <= 0) {
                     inv->item->name = "Ashy Remnants";
-                    //TODO Hard-coded icon
-                    inv->item->display = '~';
+                    inv->item->display = ICON_ASH;
                 }
                 inv = inv->next;
             }
-            //TODO make constants? tiles regen 3 air if they are below 20?
-            if (lvl->tiles[x][y] != TILE_WALL && lvl->tiles[x][y] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[air] < 20) lvl->chemistry[x][y]->elements[air] += 3;
+            if (lvl->tiles[x][y] != TILE_WALL && lvl->tiles[x][y] != DOOR_CLOSED && lvl->chemistry[x][y]->elements[air] < TILE_AIR_REGEN_THRESHOLD) lvl->chemistry[x][y]->elements[air] += TILE_AIR_REGEN_RATE;
         }
     }
     for (int element = 0; element < ELEMENT_COUNT; element++) {
@@ -323,8 +325,7 @@ void level_step_chemistry(level* lvl) {
                 }
             }
 
-            //ASK I cannot tell whether these are magic numbers or not
-            //because I have no idea what's going on here.
+            //TODO Make these variable names descriptive
             for (int x = 0; x < lvl->width; x++) {
                 for (int y = 0; y < lvl->height; y++) {
                     int rx = rand();
@@ -343,6 +344,7 @@ void level_step_chemistry(level* lvl) {
                     }
                 }
             }
+
             for (int x = 0; x < lvl->width; x++) {
                 for (int y = 0; y < lvl->height; y++) {
                     if (added_element[x][y] > 0 || removed_element[x][y] > 0) {
@@ -365,13 +367,16 @@ int main() {
         int ch;
         int turn = 0;
         level *lvl;
+        const char* do_log = getenv("ENABLE_LOG");
+
+        if (do_log != NULL) logging_active = true;
 
         srand(time(NULL));
         initscr();
 
         if (! init_colors()) {
             //TODO print TERM environment variable
-            fprintf(stderr, "Terminal does not support color.\n");
+            logger("Terminal does not support color.\n");
             exit(1);
         }
 
@@ -387,7 +392,7 @@ int main() {
 
         // Main Loop
         do {
-            fprintf(stderr, "=== Turn %3d ============================================\n", turn++);
+            logger("=== Turn %3d ============================================\n", turn++);
             turn++;
             sync_simulation(lvl->sim, turn*TICKS_PER_TURN);
 

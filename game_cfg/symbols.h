@@ -20,6 +20,9 @@
 #define ICON_UMBER_HULK_ASLEEP 'z'
 #define ICON_MINOTAUR 'M'
 
+// Items
+#define ICON_ASH '~'
+
 // Emotes
 #define EMOTE_OUCH '!'
 #define EMOTE_ANGRY '%'

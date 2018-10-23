@@ -86,10 +86,10 @@ wtf:
 		-e 'COMPILE.c =' \
 		-e 'LINK.c ='
 
-errors:
-	mkfifo errors
-run: strict errors
-	./game 2> errors || reset
+.errors:
+	mkfifo .errors
+run: strict .errors
+	ENABLE_LOG=1 ./game 2> .errors || reset
 # This only checks that "errors" exists, not whether it's a pipe
 console: errors
 	tail -f errors 

@@ -4,6 +4,7 @@
 #include <math.h>
 
 #include "level.h"
+#include "../log.h"
 #include "../mob/mob.h"
 
 static bool approach(level *lvl, mobile *actor, int target_x, int target_y) {
@@ -367,10 +368,10 @@ item* level_pop_item(level *lvl, int x, int y) {
 
 bool is_position_valid(level *lvl, int x, int y) {
     if (x >= lvl->width || x < 0) {
-        fprintf(stderr, "ERROR %s: %s: %d\n", "is_position_valid", "x is out of bounds", x);
+        logger("ERROR %s: %s: %d\n", "is_position_valid", "x is out of bounds", x);
         return false;
     } else if (y >= lvl->height || y < 0) {
-        fprintf(stderr, "ERROR %s: %s: %d\n", "is_position_valid", "y is out of bounds", y);
+        logger("ERROR %s: %s: %d\n", "is_position_valid", "y is out of bounds", y);
         return false;
     } else if (lvl->tiles[x][y] == TILE_WALL || lvl->tiles[x][y] == DOOR_CLOSED) {
         // from a performance standpoint, this should be the first test
