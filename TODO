@@ -2,3 +2,5 @@ move .o files to subdir
 'assert' to check whether a mob is on an invalid square?
 implement Bresenham. for rillz
 "move" API
+reduce number of .h files?
+make functions static where appropriate

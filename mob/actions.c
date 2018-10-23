@@ -21,10 +21,10 @@ void mob_toggle_door(level *lvl, mobile *mob, direction dir) {
         default:
             return;
     }
-    if (lvl->tiles[x][y] == OPEN_DOOR) {
-        lvl->tiles[x][y] = CLOSED_DOOR;
-    } else if (lvl->tiles[x][y] == CLOSED_DOOR) {
-        lvl->tiles[x][y] = OPEN_DOOR;
+    if (lvl->tiles[x][y] == DOOR_OPEN) {
+        lvl->tiles[x][y] = DOOR_CLOSED;
+    } else if (lvl->tiles[x][y] == DOOR_CLOSED) {
+        lvl->tiles[x][y] = DOOR_OPEN;
     }
 }
 
@@ -52,7 +52,7 @@ void mob_pickup_item(level *lvl, mobile *mob) {
     }
 }
 
-void mob_smash(level *lvl, mobile *mob) {
+void mob_smash_potion(level *lvl, mobile *mob) {
     item *potion = ((item*)mob)->contents->item;
     add_constituents(lvl->chemistry[mob->x][mob->y], potion->chemistry);
     inventory_item *inv = ((item*)mob)->contents;

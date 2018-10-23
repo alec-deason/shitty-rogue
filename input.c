@@ -76,9 +76,9 @@ static void quaff(level *lvl, int key, direction dir) {
 }
 
 
-static void smash(level *lvl, int key, direction dir) {
+static void smash_potion(level *lvl, int key, direction dir) {
     if (((item*)lvl->player)->contents != NULL && ((item*)lvl->player)->contents->item->type == Potion) {
-        mob_smash(lvl, lvl->player);
+        mob_smash_potion(lvl, lvl->player);
         print_message("You smash the potion on the floor.");
     } else print_message("That isn't a potion.");
 }
@@ -125,7 +125,7 @@ struct command COMMANDS[] = {
     { .key = 'd', .name="Drop Item", .requires_direction = false, .handler = drop_item},
     { .key = '.', .name="Pickup Item", .requires_direction = false, .handler = pickup_item},
     { .key = 'q', .name="Quaff Potion", .requires_direction = false, .handler = quaff},
-    { .key = 'v', .name="Smash Potion", .requires_direction = false, .handler = smash},
+    { .key = 'v', .name="Smash Potion", .requires_direction = false, .handler = smash_potion},
     { .key = 'e', .name="Examine Item", .requires_direction = false, .handler = examine_item},
     { .key = 's', .name="Status", .requires_direction = false, .handler = status},
     { .key = 't', .name="Examine Location", .requires_direction = false, .handler = examine_location}
