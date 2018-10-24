@@ -2,11 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "game.h"
-#include "log.h"
-#include "curses_renderer.h"
-#include "log.h"
-#include "color/color.h"
+#include "../log.h"
+#include "../renderer.h"
+#include "color.h"
+#include "../input.h"
 
 
 char message_banner[MESSAGE_LENGTH];
@@ -115,4 +114,8 @@ void draw_level(level *lvl) {
     move(row, 0);
     clrtoeol();
     mvprintw(row, 0, message_banner);
+}
+
+int get_keystroke(void) {
+    return getch();
 }

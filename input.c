@@ -1,4 +1,4 @@
-#include <ncurses.h>
+#include <stdio.h>
 
 #include "game.h"
 #include "log.h"
@@ -146,7 +146,7 @@ static void print_help(level *lvl, int key, direction dir) {
 }
 
 static direction get_direction(void) {
-    switch (getch()) {
+    switch (get_keystroke()) {
         case KEY_UP:
             return up;
         case KEY_RIGHT:
@@ -161,7 +161,7 @@ static direction get_direction(void) {
 }
 
 void get_input(level *lvl) {
-    int key = getch();
+    int key = get_keystroke();
     direction dir = no_direction;
 
     for (int i = 0; i < NUM_COMMANDS; i++) {

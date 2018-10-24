@@ -5,7 +5,7 @@
 #include "mob/mob.h"
 #include "level/level.h"
 
-#include "curses_renderer.h"
+#include "renderer.h"
 #include "game.h"
 #include "log.h"
 #include "input.h"
