@@ -36,8 +36,8 @@ void bres(int a_x, int a_y, int b_x, int b_y) {
         error = 2 * dy - dx;
 
         // two increment options
-        increment_and_drain = 2 * (dy - dx);
         increment = 2 * dy;
+        increment_and_drain = increment - (2 * dx);
 
         // take i steps, where i is the distance between a and b
         for (int i = 0; i < dx; i++) {
@@ -48,6 +48,7 @@ void bres(int a_x, int a_y, int b_x, int b_y) {
                 error += increment;
             }
 
+            // x takes a step
             x += x_increment;
             draw_pixel(x,y);
         }
@@ -55,8 +56,8 @@ void bres(int a_x, int a_y, int b_x, int b_y) {
         // 45 degree or steep slope
         draw_pixel(x,y);
         error = 2 * dx - dy;
-        increment_and_drain = 2 * (dx - dy);
         increment = 2 * dx;
+        increment_and_drain = increment - (2 * dy);
 
         for (int i = 0; i < dy; i++) {
             if (error >= 0) {
