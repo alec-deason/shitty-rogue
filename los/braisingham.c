@@ -13,24 +13,32 @@
 #include <GL/glut.h>
 #include <stdio.h>
 
+#define PIXELS_PER_SQUARE 25
+#define WINDOW_WIDTH_IN_SQUARES 20
+#define WINDOW_HEIGHT_IN_SQUARES 20
+
+#define WINDOW_WIDTH (WINDOW_WIDTH_IN_SQUARES * PIXELS_PER_SQUARE)
+#define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
+
 void draw_pixel(int ix, int iy) {
-  glBegin(GL_POINTS);
-    glVertex2i(ix, iy);
-  glEnd();
+    fprintf(stderr, "Drawing (%3d,%3d)\n", ix, iy);
+    glBegin(GL_POINTS);
+        glVertex2i(ix, iy);
+    glEnd();
 }
 
 void braise(int a_x, int a_y, int b_x, int b_y) {
     // initialize starting (x,y)
-    int x = a_x;
-    int y = a_y;
+    int x = a_x * PIXELS_PER_SQUARE;
+    int y = a_y * PIXELS_PER_SQUARE;
 
     // calculate x- and y-distances
     int dx = abs(b_x - a_x);
     int dy = abs(b_y - a_y);
 
     // set signs on increments
-    int x_increment = (b_x >= a_x) ? 1 : -1;
-    int y_increment = (b_y >= a_y) ? 1 : -1;
+    int x_increment = PIXELS_PER_SQUARE * ((b_x >= a_x) ? 1 : -1);
+    int y_increment = PIXELS_PER_SQUARE * ((b_y >= a_y) ? 1 : -1);
 
     // pointers to things what get changed
     int *rise, *run;
@@ -39,6 +47,8 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 
     // draw starting pixel
     draw_pixel(x,y);
+
+    fprintf(stderr, "Initialized\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
 
     // set up which values will be modified based on
     // the slope of the line
@@ -74,6 +84,7 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 
     // step 'run' many steps along the stepper axis
     for (int i = 0; i < *run; i++) {
+        fprintf(stderr, "Step %d: ", i);
         // advance stepper
         *stepper += *step;
         // advance "error"
@@ -97,17 +108,17 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
-    braise(200, 200, 100, 50);
-    braise(100, 100, 200, 50);
-    braise(200, 100, 10, 150);
-    braise(100, 50, 75, 75);
+    // these values should be multiples of PIXELS_PER_SQUARE
+    braise(8, 12, 4, 2);
+    braise(18, 14, 1, 16);
+    braise(4, 2, 13, 8);
     glFlush();
 }
 
 void myinit() {
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glColor3f(1.0, 0.0, 0.0);
-    glPointSize(1.0);
+    glPointSize((float)PIXELS_PER_SQUARE);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluOrtho2D(0.0, 499.0, 0.0, 499.0);
@@ -117,7 +128,7 @@ void main(int argc, char** argv) {
 /* standard GLUT initialization */
     glutInit(&argc,argv);
     glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); /* default, not needed */
-    glutInitWindowSize(500,500); /* 500x500 pixel window */
+    glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT); /* 500x500 pixel window */
     glutInitWindowPosition(0,0); /* place window top left on display */
     glutCreateWindow("Bresenham's Algorithm"); /* window title */
     glutDisplayFunc(display); /* display callback invoked when window opened */
