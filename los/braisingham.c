@@ -13,9 +13,9 @@
 #include <GL/glut.h>
 #include <stdio.h>
 
-#define PIXELS_PER_SQUARE 25
-#define WINDOW_WIDTH_IN_SQUARES 20
-#define WINDOW_HEIGHT_IN_SQUARES 20
+#define PIXELS_PER_SQUARE 10
+#define WINDOW_WIDTH_IN_SQUARES 50
+#define WINDOW_HEIGHT_IN_SQUARES 50
 
 #define WINDOW_WIDTH (WINDOW_WIDTH_IN_SQUARES * PIXELS_PER_SQUARE)
 #define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
@@ -109,9 +109,10 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     // these values should be multiples of PIXELS_PER_SQUARE
-    braise(8, 12, 4, 2);
-    braise(18, 14, 1, 16);
-    braise(4, 2, 13, 8);
+    braise(8, 22, 4, 2);
+    braise(18, 14, 11, 46);
+    braise(4, 2, 33, 8);
+    braise(40, 35, 48, 27);
     glFlush();
 }
 
