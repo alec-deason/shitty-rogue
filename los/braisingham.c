@@ -51,8 +51,13 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     int *stepper, *step;
     int *bumper, *bump;
 
+    // initialize pixel color
+    float red = 0.0;
+    float green = 1.0;
+    float blue = 0.0;
+
     // draw starting pixel
-    draw_pixel(x, y, GREEN);
+    draw_pixel(x, y, red, green, blue);
 
     fprintf(stderr, "Initialized\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
 
@@ -88,6 +93,8 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     int increment = 2 * *rise;
     int drain = 2 * *run;
 
+    float color_step = 1.0 / *run;
+
     // step 'run' many steps along the stepper axis
     for (int i = 0; i < *run; i++) {
         fprintf(stderr, "Step %d: ", i);
@@ -104,10 +111,11 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
             error -= drain;
         }
 
-        draw_pixel(x, y, BLACK);
+        draw_pixel(x, y, red, green, blue);
+
+        green -= color_step;
+        red += color_step;
     }
-    // re-draw final pixel in different color
-    draw_pixel(x, y, RED);
 }
 
 ///////////////////////
