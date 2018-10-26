@@ -20,9 +20,15 @@
 #define WINDOW_WIDTH (WINDOW_WIDTH_IN_SQUARES * PIXELS_PER_SQUARE)
 #define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
 
-void draw_pixel(int ix, int iy) {
+#define BLACK 0.0,0.0,0.0
+#define RED 1.0,0.0,0.0
+#define GREEN 0.0,1.0,0.0
+#define BLUE 0.0,0.0,1.0
+
+void draw_pixel(int ix, int iy, float red, float green, float blue) {
     fprintf(stderr, "Drawing (%3d,%3d)\n", ix, iy);
     glBegin(GL_POINTS);
+        glColor3f(red, green, blue);
         glVertex2i(ix, iy);
     glEnd();
 }
@@ -46,7 +52,7 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     int *bumper, *bump;
 
     // draw starting pixel
-    draw_pixel(x,y);
+    draw_pixel(x, y, GREEN);
 
     fprintf(stderr, "Initialized\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
 
@@ -98,8 +104,10 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
             error -= drain;
         }
 
-        draw_pixel(x,y);
+        draw_pixel(x, y, BLACK);
     }
+    // re-draw final pixel in different color
+    draw_pixel(x, y, RED);
 }
 
 ///////////////////////
@@ -109,16 +117,28 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     // these values should be multiples of PIXELS_PER_SQUARE
-    braise(8, 22, 4, 2);
-    braise(18, 14, 11, 46);
-    braise(4, 2, 33, 8);
-    braise(40, 35, 48, 27);
+    //braise(8, 22, 4, 2);
+    //braise(18, 14, 11, 46);
+    //braise(4, 2, 33, 8);
+    //braise(40, 40, 41, 20);
+    //
+    // rays out from center
+    braise(22, 28, 11, 33); // up & left
+    braise(29, 34, 41, 42); // up & right
+    braise(26, 28, 37, 11); // down & right
+    braise(18, 18, 3, 8); // down & left
+
+    // opposite directions
+    braise(5, 45, 23, 45); // left to right
+    braise(23, 43, 5, 43); // right to left
+    braise(45, 45, 45, 25); // top to bottom
+    braise(43, 25, 43, 45); // bottom to top
+
     glFlush();
 }
 
 void myinit() {
     glClearColor(1.0, 1.0, 1.0, 1.0);
-    glColor3f(1.0, 0.0, 0.0);
     glPointSize((float)PIXELS_PER_SQUARE);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
