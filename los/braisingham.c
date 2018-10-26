@@ -2,13 +2,10 @@
 //
 //  https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/FOURTH_EDITION/PROGRAMS/bresenham.c
 //
-// Compiling via:
+// Compile via:
 //
 //  cc braisingham.c -lGL -lGLU -lglut -o show && ./show`
 //
-// Issues:
-// 
-//  Does not handle directions
 
 #include <GL/glut.h>
 #include <stdio.h>
@@ -20,16 +17,11 @@
 #define WINDOW_WIDTH (WINDOW_WIDTH_IN_SQUARES * PIXELS_PER_SQUARE)
 #define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
 
-#define BLACK 0.0,0.0,0.0
-#define RED 1.0,0.0,0.0
-#define GREEN 0.0,1.0,0.0
-#define BLUE 0.0,0.0,1.0
-
-void draw_pixel(int ix, int iy, float red, float green, float blue) {
-    fprintf(stderr, "Drawing (%3d,%3d)\n", ix, iy);
+void draw_pixel(int x, int y, float red, float green, float blue) {
+    fprintf(stderr, "Drawing (%3d,%3d)\n", x, y);
     glBegin(GL_POINTS);
         glColor3f(red, green, blue);
-        glVertex2i(ix, iy);
+        glVertex2i(x, y);
     glEnd();
 }
 
@@ -51,7 +43,7 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     int *stepper, *step;
     int *bumper, *bump;
 
-    // initialize pixel color
+    // starting line color
     float red = 0.0;
     float green = 1.0;
     float blue = 0.0;
@@ -93,6 +85,7 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     int increment = 2 * *rise;
     int drain = 2 * *run;
 
+    // size of color adjustment per step
     float color_step = 1.0 / *run;
 
     // step 'run' many steps along the stepper axis
@@ -113,6 +106,9 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 
         draw_pixel(x, y, red, green, blue);
 
+        /* check for valid space here */
+
+        // cross-fade color
         green -= color_step;
         red += color_step;
     }
@@ -125,11 +121,12 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     // these values should be multiples of PIXELS_PER_SQUARE
+
     //braise(8, 22, 4, 2);
     //braise(18, 14, 11, 46);
     //braise(4, 2, 33, 8);
     //braise(40, 40, 41, 20);
-    //
+
     // rays out from center
     braise(22, 28, 11, 33); // up & left
     braise(29, 34, 41, 42); // up & right
@@ -156,10 +153,9 @@ void myinit() {
 void main(int argc, char** argv) {
 /* standard GLUT initialization */
     glutInit(&argc,argv);
-    glutInitDisplayMode (GLUT_SINGLE | GLUT_RGB); /* default, not needed */
-    glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT); /* 500x500 pixel window */
-    glutInitWindowPosition(0,0); /* place window top left on display */
-    glutCreateWindow("Bresenham's Algorithm"); /* window title */
+    glutInitWindowSize(WINDOW_WIDTH,WINDOW_HEIGHT);
+    glutInitWindowPosition(0,0);
+    glutCreateWindow("Braising Hams");
     glutDisplayFunc(display); /* display callback invoked when window opened */
 
     myinit(); /* set attributes */
