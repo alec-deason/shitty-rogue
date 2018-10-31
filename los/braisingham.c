@@ -9,6 +9,7 @@
 
 #include <GL/glut.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 #define PIXELS_PER_SQUARE 10
 #define WINDOW_WIDTH_IN_SQUARES 50
@@ -18,14 +19,28 @@
 #define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
 
 void draw_pixel(int x, int y, float red, float green, float blue) {
-    fprintf(stderr, "Drawing (%3d,%3d)\n", x, y);
+    //fprintf(stderr, "Drawing (%3d,%3d)\n", x, y);
     glBegin(GL_POINTS);
         glColor3f(red, green, blue);
         glVertex2i(x, y);
     glEnd();
 }
 
-void braise(int a_x, int a_y, int b_x, int b_y) {
+bool checker(int x, int y) {
+    if (x > y) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+void doer(int x, int y) {
+    glPointSize((float)PIXELS_PER_SQUARE / 3);
+    draw_pixel(x, y, 0.0, 0.0, 0.0);
+    glPointSize((float)PIXELS_PER_SQUARE);
+}
+
+bool braise(int a_x, int a_y, int b_x, int b_y) {
     // initialize starting (x,y)
     int x = a_x * PIXELS_PER_SQUARE;
     int y = a_y * PIXELS_PER_SQUARE;
@@ -47,9 +62,6 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     float red = 0.0;
     float green = 1.0;
     float blue = 0.0;
-
-    // draw starting pixel
-    draw_pixel(x, y, red, green, blue);
 
     fprintf(stderr, "Initialized\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
 
@@ -88,9 +100,15 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
     // size of color adjustment per step
     float color_step = 1.0 / *run;
 
+    // draw starting pixel
+    draw_pixel(x, y, red, green, blue);
+    doer(x, y);
+
+    int i; // so we can use it after the loop
+
     // step 'run' many steps along the stepper axis
-    for (int i = 0; i < *run; i++) {
-        fprintf(stderr, "Step %d: ", i);
+    for (i = 0; i < *run; i++) {
+        fprintf(stderr, "Step %d\n", i+1);
         // advance stepper
         *stepper += *step;
         // advance "error"
@@ -106,12 +124,30 @@ void braise(int a_x, int a_y, int b_x, int b_y) {
 
         draw_pixel(x, y, red, green, blue);
 
+        doer(x, y);
+
         /* check for valid space here */
+        if (! checker(x, y)) {
+            break;
+        }
 
         // cross-fade color
         green -= color_step;
         red += color_step;
     }
+
+    if (i == *run) {
+        // We made it. Doesn't matter if the final square
+        // was inaccessible, because most of the time it'll
+        // be occupied by something.
+        return true;
+    }
+
+    // re-draw last pixel to mark where we hit something
+    // this would not be in the actual code
+    draw_pixel(x, y, 0.0, 0.0, 1.0);
+    doer(x,y);
+    return false;
 }
 
 ///////////////////////
