@@ -4,7 +4,7 @@
 //
 // Compile via:
 //
-//  cc braisingham.c -lGL -lGLU -lglut -o show && ./show`
+//  cc los/braisingham.c -lGL -lGLU -lglut -o /tmp/show && /tmp/show
 //
 
 #include <GL/glut.h>
@@ -18,29 +18,39 @@
 #define WINDOW_WIDTH (WINDOW_WIDTH_IN_SQUARES * PIXELS_PER_SQUARE)
 #define WINDOW_HEIGHT (WINDOW_HEIGHT_IN_SQUARES * PIXELS_PER_SQUARE)
 
+typedef bool (*checker_func)(int x, int y);
+typedef void (*drawer_func)(int x, int y);
+
 void draw_pixel(int x, int y, float red, float green, float blue) {
-    //fprintf(stderr, "Drawing (%3d,%3d)\n", x, y);
+    //printf("Drawing (%3d,%3d)\n", x, y);
     glBegin(GL_POINTS);
         glColor3f(red, green, blue);
         glVertex2i(x, y);
     glEnd();
 }
 
-bool checker(int x, int y) {
+bool x_bigger_than_y(int x, int y) {
     if (x > y) {
+        printf("x_bigger_than_y: %d > %d\n", x, y);
         return false;
     } else {
         return true;
     }
 }
 
-void doer(int x, int y) {
+void draw_a_black_dot(int x, int y) {
     glPointSize((float)PIXELS_PER_SQUARE / 3);
     draw_pixel(x, y, 0.0, 0.0, 0.0);
     glPointSize((float)PIXELS_PER_SQUARE);
 }
 
-bool braise(int a_x, int a_y, int b_x, int b_y) {
+void draw_a_white_dot(int x, int y) {
+    glPointSize((float)PIXELS_PER_SQUARE / 3);
+    draw_pixel(x, y, 1.0, 1.0, 1.0);
+    glPointSize((float)PIXELS_PER_SQUARE);
+}
+
+bool braise(int a_x, int a_y, int b_x, int b_y, checker_func checker, drawer_func drawer) {
     // initialize starting (x,y)
     int x = a_x * PIXELS_PER_SQUARE;
     int y = a_y * PIXELS_PER_SQUARE;
@@ -63,7 +73,7 @@ bool braise(int a_x, int a_y, int b_x, int b_y) {
     float green = 1.0;
     float blue = 0.0;
 
-    fprintf(stderr, "Initialized\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
+    printf("=== Initialized ===\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
 
     // set up which values will be modified based on
     // the slope of the line
@@ -102,13 +112,13 @@ bool braise(int a_x, int a_y, int b_x, int b_y) {
 
     // draw starting pixel
     draw_pixel(x, y, red, green, blue);
-    doer(x, y);
+    drawer(x, y);
 
     int i; // so we can use it after the loop
 
     // step 'run' many steps along the stepper axis
     for (i = 0; i < *run; i++) {
-        fprintf(stderr, "Step %d\n", i+1);
+        //printf("Step %d\n", i+1);
         // advance stepper
         *stepper += *step;
         // advance "error"
@@ -124,10 +134,11 @@ bool braise(int a_x, int a_y, int b_x, int b_y) {
 
         draw_pixel(x, y, red, green, blue);
 
-        doer(x, y);
+        drawer(x, y);
 
         /* check for valid space here */
         if (! checker(x, y)) {
+            printf("Failed checker() at (%d,%d)\n", x, y);
             break;
         }
 
@@ -140,43 +151,46 @@ bool braise(int a_x, int a_y, int b_x, int b_y) {
         // We made it. Doesn't matter if the final square
         // was inaccessible, because most of the time it'll
         // be occupied by something.
+        printf("Made it to (%d,%d)\n", x, y);
         return true;
     }
 
     // re-draw last pixel to mark where we hit something
     // this would not be in the actual code
     draw_pixel(x, y, 0.0, 0.0, 1.0);
-    doer(x,y);
+    drawer(x,y);
     return false;
 }
 
-///////////////////////
-// GL Rendering Code //
-///////////////////////
+// Draw Stuff //
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT);
     // these values should be multiples of PIXELS_PER_SQUARE
 
-    //braise(8, 22, 4, 2);
-    //braise(18, 14, 11, 46);
-    //braise(4, 2, 33, 8);
-    //braise(40, 40, 41, 20);
+    checker_func checker = x_bigger_than_y;
+    drawer_func drawer = draw_a_black_dot;
 
     // rays out from center
-    braise(22, 28, 11, 33); // up & left
-    braise(29, 34, 41, 42); // up & right
-    braise(26, 28, 37, 11); // down & right
-    braise(18, 18, 3, 8); // down & left
+    braise(22, 28, 11, 33, checker, drawer); // up & left
+    braise(29, 34, 41, 42, checker, drawer); // up & right
+    braise(26, 28, 37, 11, checker, drawer); // down & right
+    braise(18, 18, 3, 8, checker, drawer); // down & left
+
+    drawer = draw_a_white_dot;
 
     // opposite directions
-    braise(5, 45, 23, 45); // left to right
-    braise(23, 43, 5, 43); // right to left
-    braise(45, 45, 45, 25); // top to bottom
-    braise(43, 25, 43, 45); // bottom to top
+    braise(5, 45, 23, 45, checker, drawer); // left to right
+    braise(23, 43, 5, 43, checker, drawer); // right to left
+    braise(45, 45, 45, 25, checker, drawer); // top to bottom
+    braise(43, 25, 43, 45, checker, drawer); // bottom to top
 
     glFlush();
 }
+
+///////////////////////
+// GL Rendering Code //
+///////////////////////
 
 void myinit() {
     glClearColor(1.0, 1.0, 1.0, 1.0);
