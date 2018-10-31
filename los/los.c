@@ -1,141 +1,106 @@
+// Based on:
+//
+//  https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/FOURTH_EDITION/PROGRAMS/bresenham.c
+//
+
 #include "los.h"
-#include <stdio.h>
-#include <math.h>
 
-#define TRUE 1
-#define FALSE 0
-
-void step_towards(int *x, int *y, int target_x, int target_y, int diagonal) {
-    int dx = target_x - *x;
-    int dy = target_y - *y;
-
-    if (abs(dx) > abs(dy)) {
-        // need to decrease x
-        *x += (*x < target_x ? 1 : -1);
-    } else if (abs(dx) < abs(dy)) {
-        // need to decrease y
-        *y += (*y < target_y ? 1 : -1);
-    } else if (rand() % 2 == 0) {
-        // pick at random
-        // TODO Sometimes mobs will bump into a wall when they don't need to
-        *x += (*x < target_x ? 1 : -1);
-    } else {
-        *y += (*y < target_y ? 1 : -1);
-    }
+bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
+    return braise(lvl, a_x, a_y, b_x, b_y, &is_position_valid);
 }
 
-void update(int *stepper, int *bumper, float slope, int step, int bump, float *err) {
-    // calculate where the next point should be
-    // make sure this ends up as a float!
-    float ideal = *bumper + *err + slope;
-
-
-    // increment the stepper no matter what
-    *stepper += step;
-
-    int bumped = FALSE;
-
-    if (fabs(ideal - *bumper) >= 0.5) {
-        // more than half-way, round up
-        *bumper += bump;
-        bumped = TRUE;
-        // new error is distance down from new bumper to the ideal
-        *err = ideal - *bumper;
-    } else {
-        // less than half-way, leave bumper as is
-        // new error is increased by distance from bumper to ideal
-        *err += slope;
-    }
-
+bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
+    // This is between a thing and a position
+    // It just wraps line_of_sight for easier English reading
+    // Making a thing-to-thing function seems too specific
+    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }
 
-void next_square(int *x, int *y, int x_direction, float slope, float *err) {
-    // Change a position to the next position along an angle (sort of)
-    // This requires slope and err to be passed in so this really can't
-    // exist on its own. That feels weird.
+bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker) {
+    // initialize starting (x,y)
+    int x = a_x;
+    int y = a_y;
 
+    // calculate x- and y-distances
+    int dx = abs(b_x - a_x);
+    int dy = abs(b_y - a_y);
 
-    // Handle vertical lines
-    if (slope == INFINITY) {
-        *y += x_direction;
-        return;
-    } else if (slope == -INFINITY) {
-        *y -= x_direction;
-        return;
+    // set signs on increments
+    int x_increment = (b_x >= a_x) ? 1 : -1;
+    int y_increment = (b_y >= a_y) ? 1 : -1;
+
+    // pointers to things what get changed
+    int *rise, *run;
+    int *stepper, *step;
+    int *bumper, *bump;
+
+    logger("=== Initialized ===\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
+
+    // set up which values will be modified based on
+    // the slope of the line
+    if (dx > dy) {
+        // The slope is shallow
+        rise = &dy;
+        run = &dx;
+
+        stepper = &x;
+        step = &x_increment;
+
+        bumper = &y;
+        bump = &y_increment;
+    } else {
+        // The slope is steep (or 45 degrees)
+        rise = &dx;
+        run = &dy;
+
+        stepper = &y;
+        step = &y_increment;
+
+        bumper = &x;
+        bump = &x_increment;
     }
 
-    // Handle horizontal lines
-    if (slope == 0) {
-        *x += x_direction;
-        return;
-    }
+    // multiply everything by 2 to get rid of the 0.5 and
+    // leave only integer math (and shifts)
+    //TODO express in terms of 'increment' below?
+    int error = (*rise * 2) - *run;
 
-    // Set defaults to save typing in the if forest
-    int *stepper = x;
-    int *bumper = y;
-    int step = 1;
-    int bump = 1;
+    // error adjustements
+    int increment = *rise * 2;
+    int drain = *run * 2;
 
-    if (x_direction >= 0) {
-    // Increasing X
-        if (slope < 0) {
-        // Negative slope
-            if (fabs(slope) <= 1) {
-                // Octant I
-                bump = -1;
-            } else {
-                // Octant II
-                stepper = y;
-                step = -1;
-                bumper = x;
-                slope *= -1;
-                slope = 1 / slope;
-            }
-        } else {
-        // Positive slope
-            if (fabs(slope) > 1) {
-                // Octant VII
-                stepper = y;
-                bumper = x;
-                slope = 1 / slope;
-            } else {
-                // Octant VIII
-                // Yay! Lazytown!
-            }
+    int i; // so we can use it after the loop
+
+    // step 'run' many steps along the stepper axis
+    for (i = 0; i < *run; i++) {
+        //printf("Step %d\n", i+1);
+        // advance stepper
+        *stepper += *step;
+        // advance "error"
+        error += increment;
+
+        // bucket is full
+        if (error >= 0) {
+            // advance the bumper
+            *bumper += *bump;
+            // "reset" the "error"
+            error -= drain;
         }
-    } else {
-    // Decreasing X
-        if (slope >= 0) {
-        // Positive slope
-            if (fabs(slope) > 1) {
-                // Octant III
-                stepper = y;
-                bumper = x;
-                step = -1;
-                bump = -1;
-                slope *= -1;
-                slope = 1 / slope;
-            } else {
-                // Octant IV
-                step = -1;
-                bump = -1;
-                slope *= -1;
-            }
-        } else {
-        // Negative slope
-            if (fabs(slope) <= 1) {
-                // Octant V
-                step = -1;
-                slope *= -1;
-            } else {
-                // Octant VI
-                stepper = y;
-                bumper = x;
-                bump = -1;
-                slope = 1 / slope;
-            }
+
+        /* check for valid space here */
+        if (! checker(lvl, x, y)) {
+            logger("Failed checker() at (%d,%d)\n", x, y);
+            break;
         }
     }
 
-    update(stepper, bumper, slope, step, bump, err);
+    if (i == *run) {
+        // We made it. Doesn't matter if the final square
+        // was inaccessible, because most of the time it'll
+        // be occupied by something.
+        logger("Made it to (%d,%d)\n", x, y);
+        return true;
+    }
+
+    return false;
 }

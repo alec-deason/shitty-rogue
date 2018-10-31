@@ -6,16 +6,17 @@
 #include "level.h"
 #include "../log.h"
 #include "../mob/mob.h"
+#include "../los/los.h"
 
 static bool approach(level *lvl, mobile *actor, int target_x, int target_y) {
     int new_x = actor->x;
     int new_y = actor->y;
 
-    step_towards(&new_x, &new_y, target_x, target_y, false);
+    //TODO this doesn't exist anymore
+    //step_towards(&new_x, &new_y, target_x, target_y, false);
 
     return(move_if_valid(lvl, actor, new_x, new_y));
 }
-
 
 void minotaur_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
@@ -395,36 +396,4 @@ bool move_if_valid(level *lvl, mobile *mob, int x, int y) {
     } else {
         return false;
     }
-}
-
-static void set_steps(int *x_step, float *slope, int a_x, int a_y, int b_x, int b_y) {
-    int dx = b_x - a_x;
-    int dy = b_y - a_y;
-
-    *slope = (float) dy / dx;
-    *x_step = dx < 0 ? -1 : 1;
-}
-
-bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
-    // This is between two positions, theoretically non-directional
-    int x_step;
-    float slope;
-    float acc_err = 0;
-
-    set_steps(&x_step, &slope, a_x, a_y, b_x, b_y);
-
-    while (true) {
-        next_square(&a_x, &a_y, x_step, slope, &acc_err);
-
-        if (a_x == b_x && a_y == b_y) return true;
-
-        if (!(is_position_valid(lvl, a_x, a_y))) return false;
-    }
-}
-
-bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
-    // This is between a thing and a position
-    // It just wraps line_of_sight for easier English reading
-    // Making a thing-to-thing function seems too specific
-    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }
