@@ -1,8 +1,3 @@
-// Based on:
-//
-//  https://www.cs.unm.edu/~angel/BOOK/INTERACTIVE_COMPUTER_GRAPHICS/FOURTH_EDITION/PROGRAMS/bresenham.c
-//
-
 #include "los.h"
 
 bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
@@ -34,7 +29,7 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
     int *stepper, *step;
     int *bumper, *bump;
 
-    logger("=== Initialized ===\na=(%d,%d) b=(%d,%d) xy=(%d,%d) dxy=(%d,%d) inc_xy(%d,%d)\n",a_x,a_y,b_x,b_y,x,y,dx,dy,x_increment,y_increment);
+    //logger("=== Initialized ===\na=(%d,%d) b=(%d,%d) dxy=(%d + %d,%d + %d)\n",a_x,a_y,b_x,b_y,dx,x_increment,dy,y_increment);
 
     // set up which values will be modified based on
     // the slope of the line
@@ -62,17 +57,17 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
 
     // multiply everything by 2 to get rid of the 0.5 and
     // leave only integer math (and shifts)
-    //TODO express in terms of 'increment' below?
-    int error = (*rise * 2) - *run;
+    int error = 0;
 
     // error adjustements
-    int increment = *rise * 2;
-    int drain = *run * 2;
+    int increment = *rise;
+    int drain = *run;
 
     int i; // so we can use it after the loop
 
     // step 'run' many steps along the stepper axis
     for (i = 0; i < *run; i++) {
+        //logger("Step #%d: (%d,%d) step: %d + %d bump: %d + %d error: %d + %d - %d\n",i+1,x,y,*stepper,*step,*bumper,*bump,error,increment,drain);
         // handle horizontal and vertical exception cases
         // (This could be way more optimized)
         if (dx == 0) {
@@ -89,28 +84,27 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
             error += increment;
     
             // bucket is full
-            if (error >= 0) {
+            if (error >= *run) {
                 // advance the bumper
                 *bumper += *bump;
                 // "reset" the "error"
                 error -= drain;
             }
         }
+
+
+        if (x == b_x && y == b_y) {
+            // We made it. Doesn't matter if the final square
+            // was inaccessible, because most of the time it'll
+            // be occupied by something.
+            //logger("Made it to (%d,%d)\n", x, y);
+            return true;
+        }
     
         /* check for valid space here */
         if (! checker(lvl, x, y)) {
-            logger("Failed checker() on step %d out of %d at (%d,%d)\n", i, *run, x, y);
-            break;
+            //logger("Failed checker() on step #%d out of %d at (%d,%d)\n", i + 1, *run, x, y);
+            return false;
         }
     }
-
-    if (i == *run - 1) {
-        // We made it. Doesn't matter if the final square
-        // was inaccessible, because most of the time it'll
-        // be occupied by something.
-        logger("Made it to (%d,%d)\n", x, y);
-        return true;
-    }
-
-    return false;
 }
