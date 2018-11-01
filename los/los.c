@@ -73,28 +73,38 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
 
     // step 'run' many steps along the stepper axis
     for (i = 0; i < *run; i++) {
-        //printf("Step %d\n", i+1);
-        // advance stepper
-        *stepper += *step;
-        // advance "error"
-        error += increment;
-
-        // bucket is full
-        if (error >= 0) {
-            // advance the bumper
-            *bumper += *bump;
-            // "reset" the "error"
-            error -= drain;
+        // handle horizontal and vertical exception cases
+        // (This could be way more optimized)
+        if (dx == 0) {
+            // vertical line
+            y += y_increment;
+        } else if (dy == 0) {
+            // horizontal line
+            x += x_increment;
+        } else {
+            //printf("Step %d\n", i+1);
+            // advance stepper
+            *stepper += *step;
+            // advance "error"
+            error += increment;
+    
+            // bucket is full
+            if (error >= 0) {
+                // advance the bumper
+                *bumper += *bump;
+                // "reset" the "error"
+                error -= drain;
+            }
         }
-
+    
         /* check for valid space here */
         if (! checker(lvl, x, y)) {
-            logger("Failed checker() at (%d,%d)\n", x, y);
+            logger("Failed checker() on step %d out of %d at (%d,%d)\n", i, *run, x, y);
             break;
         }
     }
 
-    if (i == *run) {
+    if (i == *run - 1) {
         // We made it. Doesn't matter if the final square
         // was inaccessible, because most of the time it'll
         // be occupied by something.
