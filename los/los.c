@@ -1,6 +1,8 @@
 #include "los.h"
 
 bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
+    //TODO how the hell is is_position_valid working in here?
+    //TODO because I included level.h? yuck!
     return braise(lvl, a_x, a_y, b_x, b_y, &is_position_valid);
 }
 
@@ -11,7 +13,7 @@ bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
     return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }
 
-bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker) {
+static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker) {
     // initialize starting (x,y)
     int x = a_x;
     int y = a_y;
@@ -82,7 +84,7 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
             *stepper += *step;
             // advance "error"
             error += increment;
-    
+
             // bucket is full
             if (error >= *run) {
                 // advance the bumper
@@ -100,7 +102,7 @@ bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker
             //logger("Made it to (%d,%d)\n", x, y);
             return true;
         }
-    
+
         /* check for valid space here */
         if (! checker(lvl, x, y)) {
             //logger("Failed checker() on step #%d out of %d at (%d,%d)\n", i + 1, *run, x, y);
