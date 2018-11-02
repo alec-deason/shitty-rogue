@@ -26,18 +26,15 @@ LDLIBS = -lcurses -lm
 all: game
 
 # this project contains multiple C files, which are dependent on header files that we find using makedepend, so header files  are not listed here
-SRCS := $(shell find -name "*.c" -not -path "./tests/*" -not -path "./game.c")
+SRCS := $(shell find . -name "*.c" -not -path "./tests/*" -not -path "./game.c")
 OBJS := $(patsubst %.c,$(BUILDDIR)/%.o,$(SRCS))
-$(shell mkdir -p `dirname $(SRCS) | sed -e 's/^/$(DEPDIR)\//'`)
-$(shell mkdir -p `dirname $(SRCS) | sed -e 's/^/$(BUILDDIR)\//'`)
-
 
 print-%  : ; @echo $* = $($*)
 
-
-
 $(BUILDDIR)/%.o : %.c
 $(BUILDDIR)/%.o : %.c $(DEPDIR)/%*.d
+	mkdir -p $(DEPDIR)/$(shell dirname $<)
+	mkdir -p $(BUILDDIR)/$(shell dirname $<)
 	$(COMPILE.c) $(OUTPUT_OPTION) $<
 	$(POSTCOMPILE)
 
