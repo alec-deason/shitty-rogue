@@ -65,10 +65,7 @@ static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func 
     int increment = *rise;
     int drain = *run;
 
-    int i; // so we can use it after the loop
-
-    // step 'run' many steps along the stepper axis
-    for (i = 0; i < *run; i++) {
+    while (true) {
         //logger("Step #%d: (%d,%d) step: %d + %d bump: %d + %d error: %d + %d - %d\n",i+1,x,y,*stepper,*step,*bumper,*bump,error,increment,drain);
         // handle horizontal and vertical exception cases
         // (This could be way more optimized)
@@ -79,7 +76,6 @@ static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func 
             // horizontal line
             x += x_increment;
         } else {
-            //printf("Step %d\n", i+1);
             // advance stepper
             *stepper += *step;
             // advance "error"
@@ -93,7 +89,6 @@ static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func 
                 error -= drain;
             }
         }
-
 
         if (x == b_x && y == b_y) {
             // We made it. Doesn't matter if the final square
