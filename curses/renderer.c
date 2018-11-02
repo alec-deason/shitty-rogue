@@ -89,7 +89,7 @@ void draw_level(level *lvl) {
                 // Fog of war
                 if (icon == TILE_UNSEEN) {
                     icon = lvl->memory[x][y];
-                    attron(COLOR_PAIR(GREEN));
+                    attron(COLOR_PAIR(YELLOW));
                 } else {
                     lvl->memory[x][y] = icon;
                 }

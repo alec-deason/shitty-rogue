@@ -169,7 +169,7 @@ void get_input(level *lvl) {
             if (COMMANDS[i].requires_direction) {
                 dir = get_direction();
             }
-            //logger("Player command: %s\n", COMMANDS[i].name);
+            logger("Player command: %s\n", COMMANDS[i].name);
             COMMANDS[i].handler(lvl, key, dir);
         }
     }
