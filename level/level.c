@@ -136,7 +136,7 @@ level* make_level(void) {
     lvl->width = level_width;
     lvl->height = level_height;
     lvl->keyboard_x = lvl->keyboard_y = 0;
-    lvl->mob_count = 1 + 20;
+    lvl->mob_count = 1 + NUM_MONSTERS;
     lvl->mobs = malloc(lvl->mob_count * (sizeof(mobile*)));
     for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
     lvl->tiles = malloc(level_width * sizeof(unsigned char*));
@@ -304,8 +304,7 @@ void destroy_level(level *lvl) {
 }
 
 int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
-    // disabled partitioning
-    if (w*h > 10*10 && rand()%100 < 0) {
+    if (w*h > 10*10 && rand()%100 < PARTITIONING_PERCENTAGE) {
         int hw = w/2;
         int hh = h/2;
         int max_rm, new_rm;
