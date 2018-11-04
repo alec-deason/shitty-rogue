@@ -8,22 +8,27 @@
 #include "../mob/mob.h"
 #include "../los/los.h"
 
-static bool step_towards(level *lvl, mobile *actor, int target_x, int target_y) {
-    int new_x = actor->x;
-    int new_y = actor->y;
+static bool one_step(level *lvl, int *from_x, int *from_y, int to_x, int to_y) {
+    int dx = to_x - *from_x;
+    int dy = to_y - *from_y;
 
-    //TODO this doesn't exist anymore
-    //step_towards(&new_x, &new_y, target_x, target_y, false);
+    int x_step, y_step;
 
-    return(move_if_valid(lvl, actor, new_x, new_y));
-}
+    if (dx > 0) {
+        x_step = 1;
+    } else if (dx < 0) {
+        x_step = -1;
+    } else {
+        x_step = 0;
+    }
 
-static bool one_step(level *lvl, int from_x, int from_y, int to_x, int to_y, int *x, int *y) {
-    int dx = to_x - from_x;
-    int dy = to_y - from_y;
-
-    int x_step = (dx >= 0) ? 1 : -1;
-    int y_step = (dy >= 0) ? 1 : -1;
+    if (dy > 0) {
+        y_step = 1;
+    } else if (dy < 0) {
+        y_step = -1;
+    } else {
+        y_step = 0;
+    }
 
     int preferred_x, preferred_y;
     int fallback_x, fallback_y;
@@ -41,30 +46,28 @@ static bool one_step(level *lvl, int from_x, int from_y, int to_x, int to_y, int
     }
 
     if (dx > dy) {
-        preferred_x = from_x + x_step;
-        preferred_y = from_y;
+        preferred_x = *from_x + x_step;
+        preferred_y = *from_y;
 
-        fallback_x = from_x;
-        fallback_y = from_y + y_step;
+        fallback_x = *from_x;
+        fallback_y = *from_y + y_step;
     } else {
-        preferred_x = from_x;
-        preferred_y = from_y + y_step;
+        preferred_x = *from_x;
+        preferred_y = *from_y + y_step;
 
-        fallback_x = from_x + x_step;
-        fallback_y = from_y;
+        fallback_x = *from_x + x_step;
+        fallback_y = *from_y;
     }
 
     if (is_position_valid(lvl, preferred_x, preferred_y)) {
-        *x = preferred_x;
-        *y = preferred_y;
+        *from_x = preferred_x;
+        *from_y = preferred_y;
         return true;
     } else if (is_position_valid(lvl, fallback_x, fallback_y)) {
-        *x = fallback_x;
-        *y = fallback_y;
+        *from_x = fallback_x;
+        *from_y = fallback_y;
         return true;
     } else {
-        *x = from_x;
-        *y = from_y;
         return false;
     }
 }
@@ -72,9 +75,13 @@ static bool one_step(level *lvl, int from_x, int from_y, int to_x, int to_y, int
 void minotaur_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
     level *lvl = (level*)context;
+
     if (can_see(lvl, mob, lvl->player->x, lvl->player->y)) {
-        step_towards(lvl, mob, lvl->player->x, lvl->player->y);
-        ((item*) mob)->display = '>';
+        if (one_step(lvl, &mob->x, &mob->y, lvl->player->x, lvl->player->y)) {
+            ((item*) mob)->display = ICON_CHARGING;
+        } else {
+            ((item*) mob)->display = EMOTE_ANGRY;
+        }
     } else {
         random_walk_fire(context, vmob);
     }

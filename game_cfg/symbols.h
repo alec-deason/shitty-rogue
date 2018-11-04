@@ -20,6 +20,8 @@
 #define ICON_UMBER_HULK_ASLEEP 'z'
 #define ICON_MINOTAUR 'M'
 
+#define ICON_CHARGING '>'
+
 // Items
 #define ICON_ASH '~'
 
