@@ -5,6 +5,4 @@
 #include "setup.h"
 #include "symbols.h"
 
-#include "testing_overrides.h"
-
 #endif

@@ -7,3 +7,5 @@ Makefile.bak
 .d
 game
 *.o
+OVERRIDES.h
+*.cast
