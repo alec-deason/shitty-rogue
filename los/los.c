@@ -33,20 +33,20 @@ static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int
         rise = &dy;
         run = &dx;
 
-        stepper = &x;
+        stepper = &cur_x;
         step = &x_increment;
 
-        bumper = &y;
+        bumper = &cur_y;
         bump = &y_increment;
     } else {
         // steep slope - step along Y-axis
         rise = &dx;
         run = &dy;
 
-        stepper = &y;
+        stepper = &cur_y;
         step = &y_increment;
 
-        bumper = &x;
+        bumper = &cur_x;
         bump = &x_increment;
     }
 
@@ -73,7 +73,7 @@ static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int
             return true;
         }
 
-        if (! checker(lvl, x, y)) {
+        if (! checker(lvl, cur_x, cur_y)) {
             return false;
         }
     }
