@@ -1,41 +1,35 @@
 #include "los.h"
 
-bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
+//TODO make a mob-to-mob LOS function
+//TODO make a player-can-see function
+
+bool line_of_sight(level *lvl, int origin_x, int origin_y, int target_x, int target_y) {
     //TODO how the hell is is_position_valid working in here?
     //TODO because I included level.h? yuck!
-    return braise(lvl, a_x, a_y, b_x, b_y, &is_position_valid);
+    return check_line(lvl, origin_x, origin_y, target_x, target_y, &is_position_valid);
 }
 
 bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
-    // This is between a thing and a position
-    // It just wraps line_of_sight for easier English reading
-    // Making a thing-to-thing function seems too specific
     return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }
 
-static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func checker) {
-    // initialize starting (x,y)
-    int x = a_x;
-    int y = a_y;
+static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int target_y, checker_func checker) {
+    int cur_x = origin_x;
+    int cur_y = origin_y;
 
-    // calculate x- and y-distances
-    int dx = abs(b_x - a_x);
-    int dy = abs(b_y - a_y);
+    int dx = abs(target_x - origin_x);
+    int dy = abs(target_y - origin_y);
 
-    // set signs on increments
-    int x_increment = (b_x >= a_x) ? 1 : -1;
-    int y_increment = (b_y >= a_y) ? 1 : -1;
+    int x_increment = (target_x >= origin_x) ? 1 : -1;
+    int y_increment = (target_y >= origin_y) ? 1 : -1;
 
-    // pointers to things what get changed
     int *rise, *run;
     int *stepper, *step;
     int *bumper, *bump;
 
-
-    // set up which values will be modified based on
-    // the slope of the line
+    //TODO Should 45 degrees be shallow or steep?
     if (dx > dy) {
-        // The slope is shallow
+        // shallow slope - step along X-axis
         rise = &dy;
         run = &dx;
 
@@ -45,7 +39,7 @@ static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func 
         bumper = &y;
         bump = &y_increment;
     } else {
-        // The slope is steep (or 45 degrees)
+        // steep slope - step along Y-axis
         rise = &dx;
         run = &dy;
 
@@ -56,46 +50,29 @@ static bool braise(level *lvl, int a_x, int a_y, int b_x, int b_y, checker_func 
         bump = &x_increment;
     }
 
-    // multiply everything by 2 to get rid of the 0.5 and
-    // leave only integer math (and shifts)
-    int error = 0;
-
-    // error adjustements
-    int increment = *rise;
-    int drain = *run;
+    int bump_debt = 0;
 
     while (true) {
-        // handle horizontal and vertical exception cases
-        // (This could be way more optimized)
         if (dx == 0) {
-            // vertical line
-            y += y_increment;
+            // exception case - vertical line
+            cur_y += y_increment;
         } else if (dy == 0) {
-            // horizontal line
-            x += x_increment;
+            // exception case - horizontal line
+            cur_x += x_increment;
         } else {
-            // advance stepper
             *stepper += *step;
-            // advance "error"
-            error += increment;
+            bump_debt += *rise;
 
-            // bucket is full
-            if (error >= *run) {
-                // advance the bumper
+            if (bump_debt >= *run) {
                 *bumper += *bump;
-                // "reset" the "error"
-                error -= drain;
+                bump_debt -= *run;
             }
         }
 
-        if (x == b_x && y == b_y) {
-            // We made it. Doesn't matter if the final square
-            // was inaccessible, because most of the time it'll
-            // be occupied by something.
+        if (cur_x == target_x && cur_y == target_y) {
             return true;
         }
 
-        /* check for valid space here */
         if (! checker(lvl, x, y)) {
             return false;
         }
