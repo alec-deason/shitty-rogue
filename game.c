@@ -64,6 +64,7 @@ void step_mobile(level *lvl, mobile *mob) {
     }
     step_item(lvl, (item*)mob, lvl->chemistry[mob->x][mob->y]);
     if (((item*)mob)->health <= 0) {
+        logger("Mob dies: %s\n", ((item*)mob)->name);
         mob->active = false;
     }
 }
