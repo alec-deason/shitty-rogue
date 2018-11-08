@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "game.h"
+#include "renderer.h"
 #include "log.h"
 #include "input.h"
 #include "mob/actions.h"

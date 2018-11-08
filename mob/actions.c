@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "actions.h"
+#include "../renderer.h"
 
 void mob_toggle_door(level *lvl, mobile *mob, direction dir) {
     int x = mob->x;

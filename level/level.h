@@ -26,6 +26,8 @@ typedef struct Level {
     bool active;
 } level;
 
+
+static bool approach(level *lvl, mobile *actor, int target_x, int target_y);
 level* make_level(void);
 void destroy_level(level *lvl);
 void level_push_item(level *lvl, item *itm, int x, int y);

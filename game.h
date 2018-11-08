@@ -6,8 +6,6 @@
 extern int keyboard_x, keyboard_y;
 extern char message_banner[MESSAGE_LENGTH];
 
-void print_message(char *msg);
-
 typedef enum direction {
     up,
     right,
