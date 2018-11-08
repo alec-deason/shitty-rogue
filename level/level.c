@@ -6,23 +6,82 @@
 #include "level.h"
 #include "../log.h"
 #include "../mob/mob.h"
+#include "../los/los.h"
 
-static bool approach(level *lvl, mobile *actor, int target_x, int target_y) {
-    int new_x = actor->x;
-    int new_y = actor->y;
+static bool one_step(level *lvl, int *from_x, int *from_y, int to_x, int to_y) {
+    int dx = to_x - *from_x;
+    int dy = to_y - *from_y;
 
-    step_towards(&new_x, &new_y, target_x, target_y, false);
+    int x_step, y_step;
 
-    return(move_if_valid(lvl, actor, new_x, new_y));
+    if (dx > 0) {
+        x_step = 1;
+    } else if (dx < 0) {
+        x_step = -1;
+    } else {
+        x_step = 0;
+    }
+
+    if (dy > 0) {
+        y_step = 1;
+    } else if (dy < 0) {
+        y_step = -1;
+    } else {
+        y_step = 0;
+    }
+
+    int preferred_x, preferred_y;
+    int fallback_x, fallback_y;
+
+    // if the direction is 45 degrees, pick at random
+    if (dx == dy) {
+        // faking (dx,dy) values to feed the selector below
+        if (rand() % 2 == 0) {
+            dx = 1;
+            dy = -1;
+        } else {
+            dy = 1;
+            dx = -1;
+        }
+    }
+
+    if (dx > dy) {
+        preferred_x = *from_x + x_step;
+        preferred_y = *from_y;
+
+        fallback_x = *from_x;
+        fallback_y = *from_y + y_step;
+    } else {
+        preferred_x = *from_x;
+        preferred_y = *from_y + y_step;
+
+        fallback_x = *from_x + x_step;
+        fallback_y = *from_y;
+    }
+
+    if (is_position_valid(lvl, preferred_x, preferred_y)) {
+        *from_x = preferred_x;
+        *from_y = preferred_y;
+        return true;
+    } else if (is_position_valid(lvl, fallback_x, fallback_y)) {
+        *from_x = fallback_x;
+        *from_y = fallback_y;
+        return true;
+    } else {
+        return false;
+    }
 }
-
 
 void minotaur_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
     level *lvl = (level*)context;
+
     if (can_see(lvl, mob, lvl->player->x, lvl->player->y)) {
-        approach(lvl, mob, lvl->player->x, lvl->player->y);
-        ((item*) mob)->display = '>';
+        if (one_step(lvl, &mob->x, &mob->y, lvl->player->x, lvl->player->y)) {
+            ((item*) mob)->display = ICON_CHARGING;
+        } else {
+            ((item*) mob)->display = EMOTE_ANGRY;
+        }
     } else {
         random_walk_fire(context, vmob);
     }
@@ -77,7 +136,7 @@ level* make_level(void) {
     lvl->width = level_width;
     lvl->height = level_height;
     lvl->keyboard_x = lvl->keyboard_y = 0;
-    lvl->mob_count = 8;
+    lvl->mob_count = 1 + NUM_MONSTERS;
     lvl->mobs = malloc(lvl->mob_count * (sizeof(mobile*)));
     for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
     lvl->tiles = malloc(level_width * sizeof(unsigned char*));
@@ -245,8 +304,7 @@ void destroy_level(level *lvl) {
 }
 
 int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
-    // disabled partitioning
-    if (w*h > 10*10 && rand()%100 < 55) {
+    if (w*h > 10*10 && rand()%100 < PARTITIONING_PERCENTAGE) {
         int hw = w/2;
         int hh = h/2;
         int max_rm, new_rm;
@@ -395,36 +453,4 @@ bool move_if_valid(level *lvl, mobile *mob, int x, int y) {
     } else {
         return false;
     }
-}
-
-static void set_steps(int *x_step, float *slope, int a_x, int a_y, int b_x, int b_y) {
-    int dx = b_x - a_x;
-    int dy = b_y - a_y;
-
-    *slope = (float) dy / dx;
-    *x_step = dx < 0 ? -1 : 1;
-}
-
-bool line_of_sight(level *lvl, int a_x, int a_y, int b_x, int b_y) {
-    // This is between two positions, theoretically non-directional
-    int x_step;
-    float slope;
-    float acc_err = 0;
-
-    set_steps(&x_step, &slope, a_x, a_y, b_x, b_y);
-
-    while (true) {
-        next_square(&a_x, &a_y, x_step, slope, &acc_err);
-
-        if (a_x == b_x && a_y == b_y) return true;
-
-        if (!(is_position_valid(lvl, a_x, a_y))) return false;
-    }
-}
-
-bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
-    // This is between a thing and a position
-    // It just wraps line_of_sight for easier English reading
-    // Making a thing-to-thing function seems too specific
-    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }

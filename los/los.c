@@ -1,141 +1,80 @@
 #include "los.h"
-#include <stdio.h>
-#include <math.h>
 
-#define TRUE 1
-#define FALSE 0
+//TODO make a mob-to-mob LOS function
+//TODO make a player-can-see function
 
-void step_towards(int *x, int *y, int target_x, int target_y, int diagonal) {
-    int dx = target_x - *x;
-    int dy = target_y - *y;
-
-    if (abs(dx) > abs(dy)) {
-        // need to decrease x
-        *x += (*x < target_x ? 1 : -1);
-    } else if (abs(dx) < abs(dy)) {
-        // need to decrease y
-        *y += (*y < target_y ? 1 : -1);
-    } else if (rand() % 2 == 0) {
-        // pick at random
-        // TODO Sometimes mobs will bump into a wall when they don't need to
-        *x += (*x < target_x ? 1 : -1);
-    } else {
-        *y += (*y < target_y ? 1 : -1);
-    }
+bool line_of_sight(level *lvl, int origin_x, int origin_y, int target_x, int target_y) {
+    //TODO how the hell is is_position_valid working in here?
+    //TODO because I included level.h? yuck!
+    return check_line(lvl, origin_x, origin_y, target_x, target_y, &is_position_valid);
 }
 
-void update(int *stepper, int *bumper, float slope, int step, int bump, float *err) {
-    // calculate where the next point should be
-    // make sure this ends up as a float!
-    float ideal = *bumper + *err + slope;
-
-
-    // increment the stepper no matter what
-    *stepper += step;
-
-    int bumped = FALSE;
-
-    if (fabs(ideal - *bumper) >= 0.5) {
-        // more than half-way, round up
-        *bumper += bump;
-        bumped = TRUE;
-        // new error is distance down from new bumper to the ideal
-        *err = ideal - *bumper;
-    } else {
-        // less than half-way, leave bumper as is
-        // new error is increased by distance from bumper to ideal
-        *err += slope;
-    }
-
+bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
+    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }
 
-void next_square(int *x, int *y, int x_direction, float slope, float *err) {
-    // Change a position to the next position along an angle (sort of)
-    // This requires slope and err to be passed in so this really can't
-    // exist on its own. That feels weird.
+static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int target_y, checker_func checker) {
+    int cur_x = origin_x;
+    int cur_y = origin_y;
 
+    int dx = abs(target_x - origin_x);
+    int dy = abs(target_y - origin_y);
 
-    // Handle vertical lines
-    if (slope == INFINITY) {
-        *y += x_direction;
-        return;
-    } else if (slope == -INFINITY) {
-        *y -= x_direction;
-        return;
-    }
+    int x_increment = (target_x >= origin_x) ? 1 : -1;
+    int y_increment = (target_y >= origin_y) ? 1 : -1;
 
-    // Handle horizontal lines
-    if (slope == 0) {
-        *x += x_direction;
-        return;
-    }
+    int *rise, *run;
+    int *stepper, *step;
+    int *bumper, *bump;
 
-    // Set defaults to save typing in the if forest
-    int *stepper = x;
-    int *bumper = y;
-    int step = 1;
-    int bump = 1;
+    //TODO Should 45 degrees be shallow or steep?
+    if (dx > dy) {
+        // shallow slope - step along X-axis
+        rise = &dy;
+        run = &dx;
 
-    if (x_direction >= 0) {
-    // Increasing X
-        if (slope < 0) {
-        // Negative slope
-            if (fabs(slope) <= 1) {
-                // Octant I
-                bump = -1;
-            } else {
-                // Octant II
-                stepper = y;
-                step = -1;
-                bumper = x;
-                slope *= -1;
-                slope = 1 / slope;
-            }
-        } else {
-        // Positive slope
-            if (fabs(slope) > 1) {
-                // Octant VII
-                stepper = y;
-                bumper = x;
-                slope = 1 / slope;
-            } else {
-                // Octant VIII
-                // Yay! Lazytown!
-            }
-        }
+        stepper = &cur_x;
+        step = &x_increment;
+
+        bumper = &cur_y;
+        bump = &y_increment;
     } else {
-    // Decreasing X
-        if (slope >= 0) {
-        // Positive slope
-            if (fabs(slope) > 1) {
-                // Octant III
-                stepper = y;
-                bumper = x;
-                step = -1;
-                bump = -1;
-                slope *= -1;
-                slope = 1 / slope;
-            } else {
-                // Octant IV
-                step = -1;
-                bump = -1;
-                slope *= -1;
-            }
-        } else {
-        // Negative slope
-            if (fabs(slope) <= 1) {
-                // Octant V
-                step = -1;
-                slope *= -1;
-            } else {
-                // Octant VI
-                stepper = y;
-                bumper = x;
-                bump = -1;
-                slope = 1 / slope;
-            }
-        }
+        // steep slope - step along Y-axis
+        rise = &dx;
+        run = &dy;
+
+        stepper = &cur_y;
+        step = &y_increment;
+
+        bumper = &cur_x;
+        bump = &x_increment;
     }
 
-    update(stepper, bumper, slope, step, bump, err);
+    int bump_debt = 0;
+
+    while (true) {
+        if (dx == 0) {
+            // exception case - vertical line
+            cur_y += y_increment;
+        } else if (dy == 0) {
+            // exception case - horizontal line
+            cur_x += x_increment;
+        } else {
+            *stepper += *step;
+            bump_debt += *rise;
+
+            if (bump_debt >= *run) {
+                *bumper += *bump;
+                bump_debt -= *run;
+            }
+        }
+
+        if (cur_x == target_x && cur_y == target_y) {
+            return true;
+        }
+
+        if (! checker(lvl, cur_x, cur_y)) {
+            return false;
+        }
+    }
 }

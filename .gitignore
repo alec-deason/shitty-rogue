@@ -8,3 +8,5 @@ Makefile.bak
 game
 *.o
 build/
+OVERRIDES.h
+*.cast

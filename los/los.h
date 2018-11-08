@@ -1,12 +1,14 @@
 #ifndef INC_LOS_H
 #define INC_LOS_H
 
-#include <math.h>
-#include <assert.h>
-#include <stdlib.h>
+#include <stdbool.h>
+#include "../level/level.h"
+#include "../log.h"
 
-void step_towards(int *x, int *y, int target_x, int target_y, int diagonal);
-void update(int *stepper, int *bumper, float slope, int step, int bump, float *acc_err);
-void next_square(int *x, int *y, int x_direction, float slope, float *acc_err);
+typedef bool (*checker_func)(level *lvl, int x, int y);
+
+bool line_of_sight(level *lvl, int origin_x, int origin_y, int target_x, int target_y);
+bool can_see(level *lvl, mobile *actor, int target_x, int target_y);
+static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int target_y, checker_func checker);
 
 #endif

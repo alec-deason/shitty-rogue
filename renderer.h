@@ -3,6 +3,7 @@
 
 #include "game.h"
 #include "level/level.h"
+#include "los/los.h"
 
 void init_rendering_system(void);
 void cleanup_rendering_system(void);
