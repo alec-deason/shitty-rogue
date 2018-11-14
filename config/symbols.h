@@ -19,9 +19,8 @@
 #define ICON_ORC 'O'
 #define ICON_UMBER_HULK_AWAKE 'U'
 #define ICON_UMBER_HULK_ASLEEP 'z'
-#define ICON_MINOTAUR 'M' | RED
-
-#define ICON_CHARGING '>'
+#define ICON_MINOTAUR 'M'
+#define ICON_MINOTAUR_CHARGING 'M' | RED
 
 // Items
 #define ICON_ASH '~'

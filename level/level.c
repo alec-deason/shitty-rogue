@@ -80,7 +80,7 @@ void minotaur_fire(void *context, void* vmob) {
 
     if (can_see(lvl, mob, lvl->player->x, lvl->player->y)) {
         if (one_step(lvl, &mob->x, &mob->y, lvl->player->x, lvl->player->y)) {
-            ((item*) mob)->display = ICON_CHARGING;
+            ((item*) mob)->display = ICON_MINOTAUR_CHARGING;
         } else {
             ((item*) mob)->display = EMOTE_ANGRY;
         }
@@ -233,9 +233,7 @@ level* make_level(void) {
         lvl->mobs[i]->active = true;
 
         //TODO magic number
-        //switch (rand()%4) {
-        //DEBUG disabled Minotaurs
-        switch (rand()%3) {
+        switch (rand()%4) {
             case 0:
                 ((item*)lvl->mobs[i])->display = ICON_GOBLIN;
                 lvl->mobs[i]->stacks = true;
