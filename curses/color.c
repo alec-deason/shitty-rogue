@@ -23,8 +23,6 @@ bool init_colors() {
     //TODO check that enough colors are supported?
     logger("Terminal %s is supporting %d colors and %d color pairs\n", getenv("TERM"), COLORS, COLOR_PAIRS);
 
-    // Colors: black red green yellow blue magenta cyan white
-    //
     // Matching these indices to the tput color indices
     init_pair(ORIG_COLORS, ORIG_COLORS, ORIG_COLORS);
 
