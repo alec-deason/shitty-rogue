@@ -233,9 +233,7 @@ level* make_level(void) {
         lvl->mobs[i]->active = true;
 
         //TODO magic number
-        //switch (rand()%4) {
-        //DEBUG disabled Minotaurs
-        switch (rand()%3) {
+        switch (rand()%4) {
             case 0:
                 ((item*)lvl->mobs[i])->display = ICON_GOBLIN;
                 lvl->mobs[i]->stacks = true;
