@@ -6,4 +6,6 @@
 
 #define DOOR_PROBABILITY 20 // percent
 
-//TODO should we use percentages or probabilities? I'm partial to %
+// Chemistry
+#define TILE_AIR_REGEN_THRESHOLD 20
+#define TILE_AIR_REGEN_RATE 3

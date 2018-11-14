@@ -12,10 +12,6 @@
 #include "simulation/simulation.h"
 #include "los/los.h"
 
-//TODO These will ultimately get pulled into the game internals header
-#define TILE_AIR_REGEN_THRESHOLD 20
-#define TILE_AIR_REGEN_RATE 3
-
 void step_chemistry(chemical_system *sys, constituents *chem, constituents *context) {
     for (int i = 0; i < 3; i++) {
         bool is_stable = chem->stable;
