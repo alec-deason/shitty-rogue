@@ -29,9 +29,6 @@ void init_rendering_system(void) {
     int row,col;
     getmaxyx(stdscr,row,col);
     logger("Terminal size: %d %d\n", row, col);
-    //TODO Is this printing a 'c' at (0,0)?
-    mvprintw(0,0, "c");
-
 }
 
 void cleanup_rendering_system(void) {
@@ -86,7 +83,6 @@ void draw_level(level *lvl) {
                     }
                 }
                 // Fog of war
-                //TODO are we using TILE_UNSEEN to test whether something is visible?
                 if (icon == TILE_UNSEEN) {
                     icon = lvl->memory[x][y] | COLOR_FOG_OF_WAR;
                 } else {

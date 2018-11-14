@@ -308,7 +308,7 @@ void destroy_level(level *lvl) {
 
 //TODO clearer function name?
 int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
-    if (w*h > 10*10 && rand()%100 < PARTITIONING_PERCENTAGE) {
+    if (w*h > 10*10 && rand()%100 < PARTITIONING_PROBABILITY * 100) {
         int hw = w/2;
         int hh = h/2;
         int max_rm, new_rm;
@@ -350,17 +350,12 @@ static void partition(level *lvl) {
     int max_room_id = rec_partition(room_ids, 0, 0, lvl->width, lvl->height, 0);
 
     // initialize all tiles to bare floor
-    //TODO Optimization vs. readability: bare floor initialization
-    //TODO could be inside an 'else' down below.
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
             lvl->tiles[x][y] = TILE_FLOOR;
         }
     }
 
-    //TODO Any problem with skipping the border squares?
-
-    //TODO 'potential_doors' was getting border squares. how?
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
             // for all nine squares around the tile
@@ -401,7 +396,6 @@ static void partition(level *lvl) {
     // starting at a "root" room. Potential doors only become doors if
     // they would connected an already-connected room to an unconnected
     // room.
-    //TODO Any problem with skipping the border squares?
     for (int x = 1; x < lvl->width - 1; x++) {
         for (int y = 1; y < lvl->height - 1; y++) {
             if (potential_doors[x][y]) {
@@ -420,22 +414,11 @@ static void partition(level *lvl) {
                     door_possible = true;
                 }
 
-                if (! door_possible) {
-                    //DEBUG Checking whether the vertical/horizontal test is redundant
-                    logger("No door possible at (%d,%d)\n", x, y);
-                    //TODO It is not redundant currently. It rejects T-junction wall squares.
-                }
-
-                //TODO XOR macro?
-                if (door_possible && (rand()%100 <= DOOR_PROBABILITY) && (room_connected[rm_a] + !room_connected[rm_b] != 1)) { // XOR
+                if (door_possible && (rand()%100 <= DOOR_PROBABILITY * 100) && (room_connected[rm_a] + !room_connected[rm_b] != 1)) { // XOR
                     logger("Placing door at (%d,%d)\n", x, y);
                     lvl->tiles[x][y] = DOOR_OPEN;
                     room_connected[rm_b]=true;
                     room_connected[rm_a]=true;
-                } else {
-                    //TODO Limited testing indicates this is redundant
-                    //logger("Changing tile(%d,%d) from %c to %c\n", x, y, lvl->tiles[x][y], TILE_WALL);
-                    lvl->tiles[x][y] = TILE_WALL;
                 }
             }
         }
