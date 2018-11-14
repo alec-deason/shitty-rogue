@@ -29,8 +29,6 @@ void init_rendering_system(void) {
     int row,col;
     getmaxyx(stdscr,row,col);
     logger("Terminal size: %d %d\n", row, col);
-    mvprintw(0,0, "c");
-
 }
 
 void cleanup_rendering_system(void) {
