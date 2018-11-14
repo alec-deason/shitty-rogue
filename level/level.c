@@ -308,7 +308,7 @@ void destroy_level(level *lvl) {
 
 //TODO clearer function name?
 int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
-    if (w*h > 10*10 && rand()%100 < PARTITIONING_PERCENTAGE) {
+    if (w*h > 10*10 && rand()%100 < PARTITIONING_PROBABILITY * 100) {
         int hw = w/2;
         int hh = h/2;
         int max_rm, new_rm;
@@ -414,7 +414,7 @@ static void partition(level *lvl) {
                     door_possible = true;
                 }
 
-                if (door_possible && (rand()%100 <= DOOR_PROBABILITY) && (room_connected[rm_a] + !room_connected[rm_b] != 1)) { // XOR
+                if (door_possible && (rand()%100 <= DOOR_PROBABILITY * 100) && (room_connected[rm_a] + !room_connected[rm_b] != 1)) { // XOR
                     logger("Placing door at (%d,%d)\n", x, y);
                     lvl->tiles[x][y] = DOOR_OPEN;
                     room_connected[rm_b]=true;
