@@ -171,6 +171,7 @@ level* make_level(void) {
 
     lvl->sim = make_simulation((void*)lvl);
 
+    //TODO have make_map() return the starting coords for the player based on root room
     make_map(lvl);
 
     lvl->player = lvl->mobs[lvl->mob_count-1];
