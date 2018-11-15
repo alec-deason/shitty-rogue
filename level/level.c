@@ -184,7 +184,7 @@ level* make_level(void) {
     simulation_push_agent(lvl->sim, &a);
 
     ((item*)lvl->player)->health = 10;
-    ((item*)lvl->player)->display = ICON_HUMAN;
+    ((item*)lvl->player)->display = ICON_PLAYER;
     ((item*)lvl->player)->name = malloc(sizeof(char)*9);
     strcpy(((item*)lvl->player)->name, "yourself");
     lvl->player->active = true;
