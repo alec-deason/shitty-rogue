@@ -304,7 +304,6 @@ void destroy_level(level *lvl) {
     free((void *)lvl);
 }
 
-//TODO clearer function name?
 static int partition(int **room_map, int x, int y, int w, int h, int rm) {
     if (w*h > 10*10 && rand()%100 < PARTITIONING_PROBABILITY * 100) {
         int hw = w/2;
@@ -331,11 +330,9 @@ static int partition(int **room_map, int x, int y, int w, int h, int rm) {
 }
 
 static void make_map(level *lvl) {
-    // tile-to-room ID mapping
-    //TODO even clearer var name to remove this comment?
-    int **room_ids = malloc(lvl->width * sizeof(int*));
+    int **room_tiles = malloc(lvl->width * sizeof(int*));
     for (int i = 0; i != lvl->width; i++) {
-        room_ids[i] = malloc(lvl->height*sizeof(int));
+        room_tiles[i] = malloc(lvl->height*sizeof(int));
     }
 
     int **potential_doors= malloc(lvl->width * sizeof(int*));
@@ -343,9 +340,7 @@ static void make_map(level *lvl) {
         potential_doors[i] = malloc(lvl->height*sizeof(int));
     }
 
-    // perform partitioning and get highest room ID
-    //TODO clearer function name to remove this comment
-    int max_room_id = partition(room_ids, 0, 0, lvl->width, lvl->height, 0);
+    int max_room_id = partition(room_tiles, 0, 0, lvl->width, lvl->height, 0);
 
     // initialize all tiles to bare floor
     for (int x = 0; x < lvl->width; x++) {
@@ -365,7 +360,7 @@ static void make_map(level *lvl) {
                     if (xx < 0 || yy < 0 || xx >= lvl->width -1 || yy >= lvl->height -1) {
                         lvl->tiles[x][y] = TILE_WALL;
                     // if it's a room boundary (i.e. room ID changes), it's a wall
-                    } else if (room_ids[xx][yy] != room_ids[x][y]) {
+                    } else if (room_tiles[xx][yy] != room_tiles[x][y]) {
                         lvl->tiles[x][y] = TILE_WALL;
                         // doors can only be N, E, S, or W of us
                         if (abs(dx+dy) == 1) {
@@ -388,7 +383,7 @@ static void make_map(level *lvl) {
     int rand_x = (rand() % (lvl->width - 1)) + 1;
     int rand_y = (rand() % (lvl->height - 1)) + 1;
 
-    room_connected[room_ids[rand_x][rand_y]] = true;
+    room_connected[room_tiles[rand_x][rand_y]] = true;
 
     // We are building a tree of connected rooms (via door placement)
     // starting at a "root" room. Potential doors only become doors if
@@ -402,13 +397,13 @@ static void make_map(level *lvl) {
 
                 if (x+1 < lvl->width && x-1 >= 0 && lvl->tiles[x+1][y] != TILE_WALL && lvl->tiles[x-1][y] != TILE_WALL) {
                 // a "horizontal" door
-                    rm_a = room_ids[x+1][y];
-                    rm_b = room_ids[x-1][y];
+                    rm_a = room_tiles[x+1][y];
+                    rm_b = room_tiles[x-1][y];
                     door_possible = true;
                 } else if (y+1 < lvl->height && y-1 >= 0 && lvl->tiles[x][y+1] != TILE_WALL && lvl->tiles[x][y-1] != TILE_WALL) {
                 // a "vertical" door
-                    rm_a = room_ids[x][y+1];
-                    rm_b = room_ids[x][y-1];
+                    rm_a = room_tiles[x][y+1];
+                    rm_b = room_tiles[x][y-1];
                     door_possible = true;
                 }
 
@@ -422,8 +417,8 @@ static void make_map(level *lvl) {
         }
     }
 
-    free((void *)room_ids[0]);
-    free((void *)room_ids);
+    free((void *)room_tiles[0]);
+    free((void *)room_tiles);
     free((void *)potential_doors[0]);
     free((void *)potential_doors);
 }
