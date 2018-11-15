@@ -70,7 +70,7 @@ START_TEST(big_insert_with_interspersed_pops) {
     int total_popped;
     int total_pushed;
 
-    srand(123456);
+    srand(FIXED_SEED);
     mheap *h = make_mheap();
     for (int i = 0; i < len; i++) {
         data[i] = rand();

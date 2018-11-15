@@ -50,7 +50,7 @@ START_TEST(get_and_set) {
     int i, j;
     vector *v = make_vector(sizeof(int));
 
-    srand(123456);
+    srand(FIXED_SEED);
     for (int i = 0; i < len; i++) {
         data[i] = rand();
         vector_push(v, &data[i]);
@@ -75,7 +75,7 @@ START_TEST(swapping) {
     int i, j;
     vector *v = make_vector(sizeof(int));
 
-    srand(123456);
+    srand(FIXED_SEED);
     for (int i = 0; i < len; i++) {
         data[i] = rand();
         vector_push(v, &data[i]);
