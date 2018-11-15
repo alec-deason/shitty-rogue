@@ -2,7 +2,7 @@
 
 // Tiles
 #define TILE_WALL '#'
-#define TILE_FLOOR '.'
+#define TILE_FLOOR '.' | LIGHT_GRAY
 #define TILE_UNSEEN ' '
 
 // Scenery

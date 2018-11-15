@@ -51,7 +51,11 @@ bool init_colors() {
     //  RED, GREEN, BLUE < 1000
 
     init_color(COLOR_BROWN, 600, 300, 0);
+    init_color(COLOR_DARK_GRAY, 300, 300, 300);
+    init_color(COLOR_LIGHT_GRAY, 600, 600, 600);
+    init_pair(PAIR_LIGHT_GRAY, COLOR_LIGHT_GRAY, ORIG_COLORS);
     init_pair(PAIR_BROWN, COLOR_BROWN, ORIG_COLORS);
+    init_pair(PAIR_DARK_GRAY, COLOR_DARK_GRAY, ORIG_COLORS);
 
     return true;
 }

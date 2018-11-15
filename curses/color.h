@@ -11,6 +11,8 @@
 //TODO that this is not a built-in color?
 #define COLOR_BROWN 17
 //TODO this 17 and the one below are different... is this dumb?
+#define COLOR_DARK_GRAY 18
+#define COLOR_LIGHT_GRAY 19
 
 // Color pair IDs
 #define ORIG_COLORS -1
@@ -23,6 +25,8 @@
 #define PAIR_CYAN 6
 #define PAIR_WHITE 7
 #define PAIR_BROWN 17
+#define PAIR_DARK_GRAY 18
+#define PAIR_LIGHT_GRAY 19
 
 // Color pairs (foreground and background)
 #define BLACK COLOR_PAIR(PAIR_BLACK)
@@ -34,6 +38,8 @@
 #define CYAN COLOR_PAIR(PAIR_CYAN)
 #define WHITE COLOR_PAIR(PAIR_WHITE)
 #define BROWN COLOR_PAIR(PAIR_BROWN)
+#define DARK_GRAY COLOR_PAIR(PAIR_DARK_GRAY)
+#define LIGHT_GRAY COLOR_PAIR(PAIR_LIGHT_GRAY)
 
 // Functions
 bool init_colors();

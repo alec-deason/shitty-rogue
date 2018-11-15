@@ -1,5 +1,5 @@
 // Tiles
-#define COLOR_FOG_OF_WAR BLUE
+#define COLOR_FOG_OF_WAR DARK_GRAY
 
 // Scenery
 
