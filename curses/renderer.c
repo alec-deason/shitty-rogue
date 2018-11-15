@@ -14,7 +14,6 @@ void init_rendering_system(void) {
     initscr();
 
     if(!init_colors()) {
-        //TODO print TERM environment variable
         logger("Exiting: Failed to initialize colors on terminal.\n");
         exit(1);
     }
