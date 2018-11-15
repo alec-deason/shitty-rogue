@@ -51,7 +51,7 @@ static void draw_mobile(mobile *mob, int x_offset, int y_offset) {
     mvaddch(mob->y + y_offset, mob->x + x_offset, icon);
 }
 
-void draw_level(level *lvl) {
+void draw_level(level *lvl, bool reveal_map) {
     int row,col;
     getmaxyx(stdscr,row,col);
     row -= 1;
@@ -72,7 +72,7 @@ void draw_level(level *lvl) {
 
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
                 //TODO wrapper function with clear name
-                if (can_see(lvl, lvl->player, x, y)) {
+                if (can_see(lvl, lvl->player, x, y) || reveal_map) {
                     if (lvl->chemistry[x][y]->elements[fire] > 0) {
                         icon = STATUS_BURNING;
                     } else if (lvl->items[x][y] != NULL) {
@@ -95,7 +95,7 @@ void draw_level(level *lvl) {
     // Draw mobs
     for (int i=0; i < lvl->mob_count; i++) {
         mobile* mob = lvl->mobs[i];
-        if (mob->active && can_see(lvl, lvl->player, mob->x, mob->y)) {
+        if (mob->active && can_see(lvl, lvl->player, mob->x, mob->y) || reveal_map) {
             if ((0 < mob->y + y_offset && mob->y + y_offset <= row) && (0 < mob->x + x_offset && mob->x + x_offset <= col)) {
                 draw_mobile(mob, x_offset, y_offset);
             }

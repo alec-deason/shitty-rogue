@@ -144,7 +144,9 @@ int main() {
         level *lvl;
         const char* env_enable_log = getenv("ENABLE_LOG");
 
-        if (env_enable_log != NULL) logging_active = true;
+        if (env_enable_log != NULL) {
+            logging_active = true;
+        }
 
         //TODO don't actually know why I'm using 'const' here
         const char* env_seed = getenv("SEED");
@@ -157,6 +159,13 @@ int main() {
             logger("Getting seed from environment variable\n");
         }
 
+        const char* env_reveal_map = getenv("REVEAL_MAP");
+        bool reveal_map = false;
+
+        if (env_reveal_map != NULL) {
+            reveal_map = true;
+        }
+
         logger("### Starting new game (SEED=%d) ###\n", seed);
 
         srand(seed);
@@ -164,7 +173,7 @@ int main() {
         init_rendering_system();
 
         lvl = make_level();
-        draw_level(lvl);
+        draw_level(lvl, reveal_map);
 
         // Main Loop
         while (lvl->active) {
@@ -187,7 +196,7 @@ int main() {
             }
 
             // Update the screen
-            draw_level(lvl);
+            draw_level(lvl, reveal_map);
 
             // If the player is dead, wait for input
             if (!lvl->player->active) {

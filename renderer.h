@@ -7,7 +7,7 @@
 
 void init_rendering_system(void);
 void cleanup_rendering_system(void);
-void draw_level(level *lvl);
+void draw_level(level *lvl, bool reveal_map);
 void print_message(char *msg);
 
 #endif
