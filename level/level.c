@@ -8,8 +8,6 @@
 #include "../mob/mob.h"
 #include "../los/los.h"
 
-//TODO Can we add a repeatable seed feature? I think trivial, right?
-
 static bool one_step(level *lvl, int *from_x, int *from_y, int to_x, int to_y) {
     int dx = to_x - *from_x;
     int dy = to_y - *from_y;
@@ -74,7 +72,7 @@ static bool one_step(level *lvl, int *from_x, int *from_y, int to_x, int to_y) {
     }
 }
 
-void minotaur_fire(void *context, void* vmob) {
+static void minotaur_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
     level *lvl = (level*)context;
 
@@ -89,7 +87,7 @@ void minotaur_fire(void *context, void* vmob) {
     }
 }
 
-void umber_hulk_fire(void *context, void* vmob) {
+static void umber_hulk_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
     if (rand()/(float)RAND_MAX > 0.8) {
         if (*(bool*)mob->state) {
@@ -106,14 +104,14 @@ void umber_hulk_fire(void *context, void* vmob) {
     }
 }
 
-bool umber_hulk_invalidation(void *vmob) {
+static bool umber_hulk_invalidation(void *vmob) {
     mobile *mob = (mobile*)vmob;
     *(bool*)mob->state = true;
     mob->base.display = ICON_UMBER_HULK_AWAKE;
     return true;
 }
 
-int umber_hulk_next_firing(void *context, void* vmob, struct event_listener *listeners) {
+static int umber_hulk_next_firing(void *context, void* vmob, struct event_listener *listeners) {
     mobile *mob = (mobile*)vmob;
     if (*(bool*)mob->state) {
         float rate = 0.5;
@@ -127,7 +125,7 @@ int umber_hulk_next_firing(void *context, void* vmob, struct event_listener *lis
     }
 }
 
-static void partition(level *lvl);
+static void make_map(level *lvl);
 
 level* make_level(void) {
     level *lvl = malloc(sizeof *lvl);
@@ -173,7 +171,7 @@ level* make_level(void) {
 
     lvl->sim = make_simulation((void*)lvl);
 
-    partition(lvl);
+    make_map(lvl);
 
     lvl->player = lvl->mobs[lvl->mob_count-1];
     lvl->player->x = lvl->player->y = 1;
@@ -307,18 +305,18 @@ void destroy_level(level *lvl) {
 }
 
 //TODO clearer function name?
-int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
+static int partition(int **room_map, int x, int y, int w, int h, int rm) {
     if (w*h > 10*10 && rand()%100 < PARTITIONING_PROBABILITY * 100) {
         int hw = w/2;
         int hh = h/2;
         int max_rm, new_rm;
 
-        max_rm = rec_partition(room_map, x, y, hw, hh, rm);
-        new_rm = rec_partition(room_map, x + hw, y, w-hw, hh, max_rm);
+        max_rm = partition(room_map, x, y, hw, hh, rm);
+        new_rm = partition(room_map, x + hw, y, w-hw, hh, max_rm);
         if (new_rm > max_rm) max_rm = new_rm;
-        new_rm = rec_partition(room_map, x + hw, y + hh, w-hw, h-hh, max_rm);
+        new_rm = partition(room_map, x + hw, y + hh, w-hw, h-hh, max_rm);
         if (new_rm > max_rm) max_rm = new_rm;
-        new_rm = rec_partition(room_map, x, y + hh, hw, h-hh, max_rm);
+        new_rm = partition(room_map, x, y + hh, hw, h-hh, max_rm);
         if (new_rm > max_rm) max_rm = new_rm;
         return max_rm;
     } else {
@@ -332,7 +330,7 @@ int rec_partition(int **room_map, int x, int y, int w, int h, int rm) {
     }
 }
 
-static void partition(level *lvl) {
+static void make_map(level *lvl) {
     // tile-to-room ID mapping
     //TODO even clearer var name to remove this comment?
     int **room_ids = malloc(lvl->width * sizeof(int*));
@@ -347,7 +345,7 @@ static void partition(level *lvl) {
 
     // perform partitioning and get highest room ID
     //TODO clearer function name to remove this comment
-    int max_room_id = rec_partition(room_ids, 0, 0, lvl->width, lvl->height, 0);
+    int max_room_id = partition(room_ids, 0, 0, lvl->width, lvl->height, 0);
 
     // initialize all tiles to bare floor
     for (int x = 0; x < lvl->width; x++) {
