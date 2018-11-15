@@ -89,7 +89,8 @@ static void minotaur_fire(void *context, void* vmob) {
 
 static void umber_hulk_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
-    if (rand()/(float)RAND_MAX > 0.8) {
+    //TODO wait... now we're doing rands like this?!
+    if (rand()/(float)RAND_MAX > 0.8) { //TODO magic number
         if (*(bool*)mob->state) {
             *(bool*)mob->state = false;
             mob->base.display = ICON_UMBER_HULK_ASLEEP;
@@ -114,7 +115,7 @@ static bool umber_hulk_invalidation(void *vmob) {
 static int umber_hulk_next_firing(void *context, void* vmob, struct event_listener *listeners) {
     mobile *mob = (mobile*)vmob;
     if (*(bool*)mob->state) {
-        float rate = 0.5;
+        float rate = 0.5; //TODO magic number
         float r = ((float)rand()) / RAND_MAX;
         int next_fire = log(1-r)/(-rate) * TICKS_PER_TURN;
         if (next_fire < TICKS_PER_TURN) return TICKS_PER_TURN;
@@ -187,7 +188,7 @@ level* make_level(void) {
     ((item*)lvl->player)->health = 10;
     ((item*)lvl->player)->display = ICON_PLAYER;
     ((item*)lvl->player)->name = malloc(sizeof(char)*9);
-    strcpy(((item*)lvl->player)->name, "yourself");
+    strcpy(((item*)lvl->player)->name, "The Player");
     lvl->player->active = true;
 
     item* potion = malloc(sizeof(item)); // FIXME leaks
@@ -242,7 +243,7 @@ level* make_level(void) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "goblin");
+                strcpy(((item*)lvl->mobs[i])->name, "Goblin");
                 break;
             case 1:
                 ((item*)lvl->mobs[i])->display = ICON_ORC;
@@ -252,7 +253,7 @@ level* make_level(void) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "orc");
+                strcpy(((item*)lvl->mobs[i])->name, "Orc");
                 break;
             case 2:
                 ((item*)lvl->mobs[i])->display = ICON_UMBER_HULK_AWAKE;
@@ -265,7 +266,7 @@ level* make_level(void) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "umber hulk");
+                strcpy(((item*)lvl->mobs[i])->name, "Umberhulk");
                 break;
             default:
                 ((item*)lvl->mobs[i])->display = ICON_MINOTAUR;
@@ -275,7 +276,7 @@ level* make_level(void) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "minotaur");
+                strcpy(((item*)lvl->mobs[i])->name, "Minotaur");
                 break;
         }
     }
