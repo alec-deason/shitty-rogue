@@ -162,6 +162,8 @@ level* make_level(void) {
         lvl->memory[i] = lvl->memory[0] + i * level_height;
         lvl->items[i] = lvl->items[0] + i * level_height;
         lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
+    }
+
     // Initialize for every square
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
