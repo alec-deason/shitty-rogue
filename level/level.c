@@ -165,7 +165,7 @@ level* make_level(void) {
     // Initialize for every square
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
-            lvl->memory[x][y] = TILE_UNSEEN;
+            lvl->memory[x][y] = TILE_NOT_VISIBLE;
             lvl->items[x][y] = NULL;
             lvl->chemistry[x][y] = make_constituents();
             lvl->chemistry[x][y]->elements[air] = 20;
@@ -309,6 +309,8 @@ void destroy_level(level *lvl) {
     destroy_simulation(lvl->sim);
     free((void *)lvl);
 }
+
+static void make_map(level *lvl);
 
 static int partition(int **room_map, int x, int y, int w, int h, int rm) {
     if (w*h > 10*10 && rand()%100 < PARTITIONING_PROBABILITY * 100) {
