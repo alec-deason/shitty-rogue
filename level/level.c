@@ -138,34 +138,38 @@ level* make_level(void) {
     lvl->height = level_height;
     lvl->keyboard_x = lvl->keyboard_y = 0;
     lvl->mob_count = 1 + NUM_MONSTERS;
+
     lvl->mobs = malloc(lvl->mob_count * (sizeof(mobile*)));
-    for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
+    for (int i=0; i < lvl->mob_count; i++) {
+        lvl->mobs[i] = make_mob(lvl);
+    }
+
     lvl->tiles = malloc(level_width * sizeof(int*));
     lvl->tiles[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->tiles[i] = lvl->tiles[0] + i * level_height;
 
     lvl->memory = malloc(level_width * sizeof(int*));
     lvl->memory[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->memory[i] = lvl->memory[0] + i * level_height;
 
     lvl->items = malloc(level_width * sizeof(inventory_item**));
     lvl->items[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for (int i = 1; i < level_width; i++)
-        lvl->items[i] = lvl->items[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->items[x][y] = NULL;
-    }
 
     lvl->chemistry = malloc(level_width * sizeof(inventory_item**));
     lvl->chemistry[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for(int i = 1; i < level_width; i++)
+
+    // Initialize for every column
+    for(int i = 1; i < level_width; i++) {
+        lvl->tiles[i] = lvl->tiles[0] + i * level_height;
+        lvl->memory[i] = lvl->memory[0] + i * level_height;
+        lvl->items[i] = lvl->items[0] + i * level_height;
         lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->memory[x][y] = TILE_NOT_VISIBLE;
-        lvl->chemistry[x][y] = make_constituents();
-        lvl->chemistry[x][y]->elements[air] = 20;
+    // Initialize for every square
+    for (int x = 0; x < lvl->width; x++) {
+        for (int y = 0; y < lvl->height; y++) {
+            lvl->memory[x][y] = TILE_UNSEEN;
+            lvl->items[x][y] = NULL;
+            lvl->chemistry[x][y] = make_constituents();
+            lvl->chemistry[x][y]->elements[air] = 20;
+        }
     }
 
     lvl->chem_sys = make_default_chemical_system();
@@ -187,11 +191,11 @@ level* make_level(void) {
 
     ((item*)lvl->player)->health = 10;
     ((item*)lvl->player)->display = ICON_PLAYER;
-    ((item*)lvl->player)->name = malloc(sizeof(char)*9);
+    ((item*)lvl->player)->name = malloc(sizeof(char)*11);
     strcpy(((item*)lvl->player)->name, "The Player");
     lvl->player->active = true;
 
-    item* potion = malloc(sizeof(item)); // FIXME leaks
+    item* potion = malloc(sizeof(item)); // FIXME leaks //TODO Ok, how?
     potion->display = ICON_POTION;
     potion->health = 1;
     potion->chemistry = make_constituents();
@@ -206,7 +210,7 @@ level* make_level(void) {
     poison->chemistry = make_constituents();
     poison->chemistry->elements[venom] = 30;
     poison->name = "Poison";
-    poison->type = Potion;
+    poison->type = Potion; //TODO isn't this a little on the nose?
     push_inventory(lvl->player, poison);
 
     item* antidote = malloc(sizeof(item)); // FIXME leaks
