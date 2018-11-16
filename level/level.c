@@ -143,30 +143,30 @@ level* make_level(void) {
     for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
     lvl->tiles = malloc(level_width * sizeof(int*));
     lvl->tiles[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->tiles[i] = lvl->tiles[0] + i * level_height;
 
     lvl->memory = malloc(level_width * sizeof(int*));
     lvl->memory[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->memory[i] = lvl->memory[0] + i * level_height;
 
     lvl->items = malloc(level_width * sizeof(inventory_item**));
     lvl->items[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for (int i = 1; i < level_width; i++)
-        lvl->items[i] = lvl->items[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->items[x][y] = NULL;
-    }
 
     lvl->chemistry = malloc(level_width * sizeof(inventory_item**));
     lvl->chemistry[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for(int i = 1; i < level_width; i++)
-        lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->memory[x][y] = TILE_UNSEEN;
-        lvl->chemistry[x][y] = make_constituents();
-        lvl->chemistry[x][y]->elements[air] = 20;
+
+    // Initialize for every column
+    for(int i = 1; i < level_width; i++) {
+        lvl->tiles[i] = lvl->tiles[0] + i * level_height;
+        lvl->memory[i] = lvl->memory[0] + i * level_height;
+        lvl->items[i] = lvl->items[0] + i * level_height;
+
+    // Initialize for every square
+    for (int x = 0; x < lvl->width; x++) {
+        for (int y = 0; y < lvl->height; y++) {
+            lvl->memory[x][y] = TILE_UNSEEN;
+            lvl->items[x][y] = NULL;
+            lvl->chemistry[x][y] = make_constituents();
+            lvl->chemistry[x][y]->elements[air] = 20;
+        }
     }
 
     lvl->chem_sys = make_default_chemical_system();
