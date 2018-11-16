@@ -68,7 +68,7 @@ void draw_level(level *lvl, bool reveal_map) {
             int x = xx - x_offset;
             int y = yy - y_offset;
 
-            int icon = TILE_UNSEEN;
+            int icon = TILE_NOT_VISIBLE;
 
             if ((0 <= x && x < lvl->width) && (0 <= y && y < lvl->height)) {
                 //TODO wrapper function with clear name
@@ -82,7 +82,7 @@ void draw_level(level *lvl, bool reveal_map) {
                     }
                 }
                 // Fog of war
-                if (icon == TILE_UNSEEN) {
+                if (icon == TILE_NOT_VISIBLE) {
                     icon = lvl->memory[x][y] | COLOR_FOG_OF_WAR;
                 } else {
                     lvl->memory[x][y] = icon;

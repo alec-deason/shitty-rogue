@@ -163,7 +163,7 @@ level* make_level(void) {
     for(int i = 1; i < level_width; i++)
         lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
     for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->memory[x][y] = TILE_UNSEEN;
+        lvl->memory[x][y] = TILE_NOT_VISIBLE;
         lvl->chemistry[x][y] = make_constituents();
         lvl->chemistry[x][y]->elements[air] = 20;
     }
