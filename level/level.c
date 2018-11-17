@@ -127,7 +127,9 @@ static int umber_hulk_next_firing(void *context, void* vmob, struct event_listen
 
 static void make_map(level *lvl);
 
-level* make_level(void) {
+level* make_level(long int map_seed) {
+    srand(map_seed);
+
     level *lvl = malloc(sizeof *lvl);
     int level_width = MAX_MAP_WIDTH;
     int level_height = MAX_MAP_HEIGHT;
