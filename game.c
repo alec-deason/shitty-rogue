@@ -136,7 +136,7 @@ void level_step_chemistry(level* lvl) {
     }
 }
 
-bool set_flags(long int *map_seed, long int *events_seed) {
+bool set_options(long int *map_seed, long int *events_seed) {
         //TODO still need to look up 'const'
         const char* env_enable_log = getenv("ENABLE_LOG");
         const char* env_map_seed = getenv("MAP_SEED");
@@ -173,7 +173,7 @@ int main() {
         long int map_seed;
         long int events_seed;
 
-        set_flags(&map_seed, &events_seed);
+        set_options(&map_seed, &events_seed);
 
         logger("### Starting new game (MAP_SEED=%d EVENTS_SEED=%d) ###\n", map_seed, events_seed);
 
