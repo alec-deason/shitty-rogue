@@ -134,46 +134,63 @@ void level_step_chemistry(level* lvl) {
             free((void*)removed_element);
         }
     }
+}
 
+bool set_options(long int *map_seed, long int *events_seed, bool *reveal_map) {
+        //TODO still need to look up 'const'
+        const char* env_enable_log = getenv("ENABLE_LOG");
+        const char* env_map_seed = getenv("MAP_SEED");
+        const char* env_events_seed = getenv("EVENTS_SEED");
+        const char* env_reveal_map = getenv("REVEAL_MAP");
 
+        if (env_enable_log != NULL) {
+            // 'logging_active' is a global
+            logging_active = true;
+        }
+
+        if (env_map_seed == NULL) {
+            *map_seed = time(NULL);
+        } else {
+            *map_seed = atoi(env_map_seed);
+            logger("Getting map seed from environment variable: %s\n", env_map_seed);
+        }
+
+        if (env_events_seed == NULL) {
+            *events_seed = time(NULL);
+        } else if (strcmp(env_events_seed, "SAME") == 0) {
+            *events_seed = *map_seed;
+            logger("Getting mob seed from map seed: %s\n", env_events_seed);
+        } else {
+            *events_seed = atoi(env_events_seed);
+            logger("Getting mob seed from environment variable: %s\n", env_events_seed);
+        }
+
+        if (env_reveal_map != NULL) {
+            *reveal_map = true;
+            logger("Running with map revealed: %s\n", env_reveal_map);
+        }
 }
 
 int main() {
         int ch;
         int turn = 0;
         level *lvl;
-        const char* env_enable_log = getenv("ENABLE_LOG");
 
-        if (env_enable_log != NULL) {
-            logging_active = true;
-        }
+        long int map_seed;
+        long int events_seed;
+        bool reveal_map;
 
-        //TODO don't actually know why I'm using 'const' here
-        const char* env_seed = getenv("SEED");
-        time_t seed;
+        set_options(&map_seed, &events_seed, &reveal_map);
 
-        if (env_seed == NULL) {
-            seed = time(NULL);
-        } else {
-            seed = atoi(env_seed);
-            logger("Getting seed from environment variable\n");
-        }
-
-        const char* env_reveal_map = getenv("REVEAL_MAP");
-        bool reveal_map = false;
-
-        if (env_reveal_map != NULL) {
-            reveal_map = true;
-        }
-
-        logger("### Starting new game (SEED=%d) ###\n", seed);
-
-        srand(seed);
+        logger("### Starting new game (MAP_SEED=%d EVENTS_SEED=%d) ###\n", map_seed, events_seed);
 
         init_rendering_system();
 
-        lvl = make_level();
+        lvl = make_level(map_seed);
+
         draw_level(lvl, reveal_map);
+
+        srand(events_seed);
 
         // Main Loop
         while (lvl->active) {
