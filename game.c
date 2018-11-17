@@ -136,11 +136,11 @@ void level_step_chemistry(level* lvl) {
     }
 }
 
-bool set_flags(long int *map_seed, long int *mob_seed) {
+bool set_flags(long int *map_seed, long int *events_seed) {
         //TODO still need to look up 'const'
         const char* env_enable_log = getenv("ENABLE_LOG");
         const char* env_map_seed = getenv("MAP_SEED");
-        const char* env_mob_seed = getenv("MOB_SEED");
+        const char* env_events_seed = getenv("EVENTS_SEED");
 
         if (env_enable_log != NULL) {
             // 'logging_active' is a global
@@ -154,14 +154,14 @@ bool set_flags(long int *map_seed, long int *mob_seed) {
             logger("Getting map seed from environment variable: %s\n", env_map_seed);
         }
 
-        if (env_mob_seed == NULL) {
-            *mob_seed = time(NULL);
-        } else if (strcmp(env_mob_seed, "SAME") == 0) {
-            *mob_seed = *map_seed;
-            logger("Getting mob seed from map seed: %s\n", env_mob_seed);
+        if (env_events_seed == NULL) {
+            *events_seed = time(NULL);
+        } else if (strcmp(env_events_seed, "SAME") == 0) {
+            *events_seed = *map_seed;
+            logger("Getting mob seed from map seed: %s\n", env_events_seed);
         } else {
-            *mob_seed = atoi(env_mob_seed);
-            logger("Getting mob seed from environment variable: %s\n", env_mob_seed);
+            *events_seed = atoi(env_events_seed);
+            logger("Getting mob seed from environment variable: %s\n", env_events_seed);
         }
 }
 
@@ -171,11 +171,11 @@ int main() {
         level *lvl;
 
         long int map_seed;
-        long int mob_seed;
+        long int events_seed;
 
-        set_flags(&map_seed, &mob_seed);
+        set_flags(&map_seed, &events_seed);
 
-        logger("### Starting new game (MAP_SEED=%d MOB_SEED=%d) ###\n", map_seed, mob_seed);
+        logger("### Starting new game (MAP_SEED=%d EVENTS_SEED=%d) ###\n", map_seed, events_seed);
 
         init_rendering_system();
 
@@ -183,7 +183,7 @@ int main() {
 
         draw_level(lvl);
 
-        srand(mob_seed);
+        srand(events_seed);
 
         // Main Loop
         while (lvl->active) {
