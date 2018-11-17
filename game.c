@@ -134,8 +134,6 @@ void level_step_chemistry(level* lvl) {
             free((void*)removed_element);
         }
     }
-
-
 }
 
 int main() {
@@ -146,19 +144,19 @@ int main() {
 
         if (env_enable_log != NULL) logging_active = true;
 
-        const char* env_seed = getenv("SEED");
-        time_t seed;
+        const char* env_map_seed = getenv("MAP_SEED");
+        time_t map_seed;
 
-        if (env_seed == NULL) {
-            seed = time(NULL);
+        if (env_map_seed == NULL) {
+            map_seed = time(NULL);
         } else {
-            seed = atoi(env_seed);
-            logger("Getting seed from environment variable\n");
+            map_seed = atoi(env_map_seed);
+            logger("Getting map seed from environment variable\n");
         }
 
-        logger("### Starting new game (SEED=%d) ###\n", seed);
+        logger("### Starting new game (MAP_SEED=%d) ###\n", map_seed);
 
-        srand(seed);
+        srand(map_seed);
 
         init_rendering_system();
 
