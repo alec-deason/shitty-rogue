@@ -20,8 +20,17 @@ bool init_colors() {
 
     start_color();
 
-    //TODO check that enough colors are supported?
     logger("Terminal %s is supporting %d colors and %d color pairs\n", getenv("TERM"), COLORS, COLOR_PAIRS);
+
+    if (COLORS < REQUIRED_COLORS) {
+        logger("Error: Terminal does not support %d colors\n", REQUIRED_COLORS);
+        return false;
+    }
+
+    if (COLOR_PAIRS < REQUIRED_COLOR_PAIRS) {
+        logger("Error: Terminal does not support %d color pairs\n", REQUIRED_COLOR_PAIRS);
+        return false;
+    }
 
     // Matching these indices to the tput color indices
     init_pair(ORIG_COLORS, ORIG_COLORS, ORIG_COLORS);

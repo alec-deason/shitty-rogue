@@ -6,4 +6,6 @@ Suite *make_vector_suite(void);
 Suite *make_simulation_suite(void);
 Suite *make_chemistry_suite(void);
 
+#define FIXED_SEED 123456
+
 #endif

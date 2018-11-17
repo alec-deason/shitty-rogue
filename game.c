@@ -142,13 +142,24 @@ int main() {
         int ch;
         int turn = 0;
         level *lvl;
-        const char* do_log = getenv("ENABLE_LOG");
+        const char* env_enable_log = getenv("ENABLE_LOG");
 
-        if (do_log != NULL) logging_active = true;
+        if (env_enable_log != NULL) logging_active = true;
 
-        logger("### Starting new game ###\n");
+        //TODO don't actually know why I'm using 'const' here
+        const char* env_seed = getenv("SEED");
+        time_t seed;
 
-        srand(time(NULL));
+        if (env_seed == NULL) {
+            seed = time(NULL);
+        } else {
+            seed = atoi(env_seed);
+            logger("Getting seed from environment variable\n");
+        }
+
+        logger("### Starting new game (SEED=%d) ###\n", seed);
+
+        srand(seed);
 
         init_rendering_system();
 

@@ -3,16 +3,6 @@
 //TODO make a mob-to-mob LOS function
 //TODO make a player-can-see function
 
-bool line_of_sight(level *lvl, int origin_x, int origin_y, int target_x, int target_y) {
-    //TODO how the hell is is_position_valid working in here?
-    //TODO because I included level.h? yuck!
-    return check_line(lvl, origin_x, origin_y, target_x, target_y, &is_position_valid);
-}
-
-bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
-    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
-}
-
 static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int target_y, checker_func checker) {
     int cur_x = origin_x;
     int cur_y = origin_y;
@@ -77,4 +67,12 @@ static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int
             return false;
         }
     }
+}
+
+bool line_of_sight(level *lvl, int origin_x, int origin_y, int target_x, int target_y) {
+    return check_line(lvl, origin_x, origin_y, target_x, target_y, &is_position_valid);
+}
+
+bool can_see(level *lvl, mobile *actor, int target_x, int target_y) {
+    return line_of_sight(lvl, actor->x, actor->y, target_x, target_y);
 }

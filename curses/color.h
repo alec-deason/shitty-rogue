@@ -3,6 +3,9 @@
 
 #include <ncurses.h>
 
+#define REQUIRED_COLORS 256
+#define REQUIRED_COLOR_PAIRS 256
+
 // Custom colors
 //TODO should I not use the COLOR_ prefix to make it clear
 //TODO that this is not a built-in color?
