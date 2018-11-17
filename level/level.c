@@ -137,34 +137,43 @@ level* make_level(void) {
     lvl->height = level_height;
     lvl->keyboard_x = lvl->keyboard_y = 0;
     lvl->mob_count = 1 + NUM_MONSTERS;
+
     lvl->mobs = malloc(lvl->mob_count * (sizeof(mobile*)));
-    for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
+
+    for (int i = 0; i < lvl->mob_count; i++) {
+        lvl->mobs[i] = make_mob(lvl);
+    }
+
     lvl->tiles = malloc(level_width * sizeof(int*));
     lvl->tiles[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->tiles[i] = lvl->tiles[0] + i * level_height;
 
     lvl->memory = malloc(level_width * sizeof(int*));
     lvl->memory[0] = malloc(level_height * level_width * sizeof(int));
-    for (int i = 1; i < level_width; i++)
-        lvl->memory[i] = lvl->memory[0] + i * level_height;
 
     lvl->items = malloc(level_width * sizeof(inventory_item**));
     lvl->items[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for (int i = 1; i < level_width; i++)
-        lvl->items[i] = lvl->items[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->items[x][y] = NULL;
-    }
 
     lvl->chemistry = malloc(level_width * sizeof(inventory_item**));
     lvl->chemistry[0] = malloc(level_height * level_width * sizeof(inventory_item*));
-    for(int i = 1; i < level_width; i++)
-        lvl->chemistry[i] = lvl->chemistry[0] + i * level_height;
-    for (int x = 0; x < lvl->width; x++) for (int y = 0; y < lvl->height; y++) {
-        lvl->memory[x][y] = TILE_UNSEEN;
-        lvl->chemistry[x][y] = make_constituents();
-        lvl->chemistry[x][y]->elements[air] = 20;
+
+    // Setup pointers on 2D arrays
+    for (int x = 1; x < lvl->width; x++) {
+        lvl->tiles[x] = lvl->tiles[0] + x * level_height;
+        lvl->memory[x] = lvl->memory[0] + x * level_height;
+        lvl->items[x] = lvl->items[0] + x * level_height;
+        lvl->chemistry[x] = lvl->chemistry[0] + x * level_height;
+    }
+
+    // Initialize 2D arrays
+    for (int x = 0; x < lvl->width; x++) {
+        for (int y = 0; y < lvl->height; y++) {
+            lvl->tiles[x][y] = TILE_FLOOR;
+            lvl->memory[x][y] = TILE_UNSEEN;
+            lvl->items[x][y] = NULL;
+
+            lvl->chemistry[x][y] = make_constituents();
+            lvl->chemistry[x][y]->elements[air] = 20;
+        }
     }
 
     lvl->chem_sys = make_default_chemical_system();
@@ -341,13 +350,6 @@ static void make_map(level *lvl) {
     }
 
     int max_room_id = partition(room_tiles, 0, 0, lvl->width, lvl->height, 0);
-
-    // initialize all tiles to bare floor
-    for (int x = 0; x < lvl->width; x++) {
-        for (int y = 0; y < lvl->height; y++) {
-            lvl->tiles[x][y] = TILE_FLOOR;
-        }
-    }
 
     for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
