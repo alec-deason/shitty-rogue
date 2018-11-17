@@ -136,9 +136,12 @@ level* make_level(void) {
     lvl->width = level_width;
     lvl->height = level_height;
     lvl->keyboard_x = lvl->keyboard_y = 0;
+
     lvl->mob_count = 1 + NUM_MONSTERS;
+
+    // Memory allocation
     lvl->mobs = malloc(lvl->mob_count * (sizeof(mobile*)));
-    for (int i=0; i < lvl->mob_count; i++) lvl->mobs[i] = make_mob(lvl);
+
     lvl->tiles = malloc(level_width * sizeof(int*));
     lvl->tiles[0] = malloc(level_height * level_width * sizeof(int));
 
@@ -151,14 +154,17 @@ level* make_level(void) {
     lvl->chemistry = malloc(level_width * sizeof(inventory_item**));
     lvl->chemistry[0] = malloc(level_height * level_width * sizeof(inventory_item*));
 
-    // Initialize for every column
+    // Initialization
+    for (int i=0; i < lvl->mob_count; i++) {
+        lvl->mobs[i] = make_mob(lvl);
+    }
+
     for(int i = 1; i < level_width; i++) {
         lvl->tiles[i] = lvl->tiles[0] + i * level_height;
+
         lvl->memory[i] = lvl->memory[0] + i * level_height;
         lvl->items[i] = lvl->items[0] + i * level_height;
 
-    // Initialize for every square
-    for (int x = 0; x < lvl->width; x++) {
         for (int y = 0; y < lvl->height; y++) {
             lvl->memory[x][y] = TILE_UNSEEN;
             lvl->items[x][y] = NULL;
