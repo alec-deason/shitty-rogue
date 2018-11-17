@@ -146,7 +146,6 @@ int main() {
 
         if (env_enable_log != NULL) logging_active = true;
 
-        //TODO don't actually know why I'm using 'const' here
         const char* env_seed = getenv("SEED");
         time_t seed;
 
