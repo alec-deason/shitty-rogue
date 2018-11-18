@@ -5,3 +5,6 @@ make a point struct
 make a display struct
 implement hunting behavior (target last seen)
 implement dice rolling function
+
+fix multiple color bug
+change REVEAL_MAP to use lvl->memory to show FOW effects

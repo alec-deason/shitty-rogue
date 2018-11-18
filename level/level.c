@@ -198,8 +198,8 @@ level* make_level(long int map_seed) {
 
     ((item*)lvl->player)->health = 10;
     ((item*)lvl->player)->display = ICON_PLAYER;
-    ((item*)lvl->player)->name = malloc(sizeof(char)*11);
-    strcpy(((item*)lvl->player)->name, "The Player");
+    ((item*)lvl->player)->name = malloc(sizeof(char) * PLAYER_NAME_LENGTH);
+    strncpy(((item*)lvl->player)->name, getenv("USER"), PLAYER_NAME_LENGTH);
     lvl->player->active = true;
 
     item* potion = malloc(sizeof(item)); // FIXME leaks //TODO Ok, how?
@@ -217,7 +217,7 @@ level* make_level(long int map_seed) {
     poison->chemistry = make_constituents();
     poison->chemistry->elements[venom] = 30;
     poison->name = "Poison";
-    poison->type = Potion; //TODO isn't this a little on the nose?
+    poison->type = Potion;
     push_inventory(lvl->player, poison);
 
     item* antidote = malloc(sizeof(item)); // FIXME leaks
@@ -254,7 +254,7 @@ level* make_level(long int map_seed) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "Goblin");
+                strcpy(((item*)lvl->mobs[i])->name, "goblin");
                 break;
             case 1:
                 ((item*)lvl->mobs[i])->display = ICON_ORC;
@@ -264,7 +264,7 @@ level* make_level(long int map_seed) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "Orc");
+                strcpy(((item*)lvl->mobs[i])->name, "orc");
                 break;
             case 2:
                 ((item*)lvl->mobs[i])->display = ICON_UMBER_HULK_AWAKE;
@@ -277,7 +277,7 @@ level* make_level(long int map_seed) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "Umberhulk");
+                strcpy(((item*)lvl->mobs[i])->name, "umberhulk");
                 break;
             default:
                 ((item*)lvl->mobs[i])->display = ICON_MINOTAUR;
@@ -287,7 +287,7 @@ level* make_level(long int map_seed) {
                 a.state = (void*)lvl->mobs[i];
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
-                strcpy(((item*)lvl->mobs[i])->name, "Minotaur");
+                strcpy(((item*)lvl->mobs[i])->name, "minotaur");
                 break;
         }
     }
