@@ -11,8 +11,13 @@
 
 enum item_type {Weapon, Potion, Creature};
 
-#define NUM_MONSTER_TYPES 4
-enum monster_type {Goblin, Orc, Umberhulk, Minotaur};
+enum monster_type {
+    Goblin,
+    Orc,
+    Umberhulk,
+    Minotaur,
+    NUM_MONSTER_TYPES
+};
 
 struct InventoryItem;
 

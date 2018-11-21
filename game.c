@@ -172,7 +172,7 @@ void set_options(long int *map_seed, long int *events_seed, bool *reveal_map) {
 
 int main() {
     int ch;
-    int turn = 1;
+    int turn = 0;
     level *lvl;
 
     long int map_seed;
@@ -197,7 +197,7 @@ int main() {
 
     // Main Loop
     while (lvl->active) {
-        logger("=== Turn %3d ===\n", turn);
+        logger("=== Turn %3d ===\n", turn + 1);
         turn++;
 
         sync_simulation(lvl->sim, turn * TICKS_PER_TURN);
