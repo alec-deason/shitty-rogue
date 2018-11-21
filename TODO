@@ -5,6 +5,5 @@ sane directory structure
 make a point struct
 make a display struct
 implement hunting behavior (target last seen)
-keep mobs from spawning in walls
 
 switch to using rand_r()

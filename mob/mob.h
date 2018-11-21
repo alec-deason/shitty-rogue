@@ -14,6 +14,8 @@ enum item_type {Weapon, Potion, Creature};
 #define NUM_MONSTER_TYPES 4
 enum monster_type {Goblin, Orc, Umberhulk, Minotaur};
 
+#define UMBERHULK_SLEEP_PROBABILITY 0.2
+
 struct InventoryItem;
 
 struct Level;

@@ -90,7 +90,7 @@ static void minotaur_fire(void *context, void* vmob) {
 
 static void umber_hulk_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
-    if (prob(0.2)) { //TODO magic number
+    if (prob(UMBERHULK_SLEEP_PROBABILITY)) {
         if (*(bool*)mob->state) {
             *(bool*)mob->state = false;
             mob->base.display = ICON_UMBER_HULK_ASLEEP;
