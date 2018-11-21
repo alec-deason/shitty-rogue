@@ -147,24 +147,24 @@ level* make_level(long int map_seed) {
         lvl->mobs[i] = make_mob(lvl);
     }
 
-    lvl->tiles = malloc(level_width * sizeof(int*));
-    lvl->tiles[0] = malloc(level_height * level_width * sizeof(int));
+    lvl->tiles = malloc(lvl->width * sizeof(int*));
+    lvl->tiles[0] = malloc(lvl->height * lvl->width * sizeof(int));
 
-    lvl->memory = malloc(level_width * sizeof(int*));
-    lvl->memory[0] = malloc(level_height * level_width * sizeof(int));
+    lvl->memory = malloc(lvl->width * sizeof(int*));
+    lvl->memory[0] = malloc(lvl->height * lvl->width * sizeof(int));
 
-    lvl->items = malloc(level_width * sizeof(inventory_item**));
-    lvl->items[0] = malloc(level_height * level_width * sizeof(inventory_item*));
+    lvl->items = malloc(lvl->width * sizeof(inventory_item**));
+    lvl->items[0] = malloc(lvl->height * lvl->width * sizeof(inventory_item*));
 
-    lvl->chemistry = malloc(level_width * sizeof(inventory_item**));
-    lvl->chemistry[0] = malloc(level_height * level_width * sizeof(inventory_item*));
+    lvl->chemistry = malloc(lvl->width * sizeof(inventory_item**));
+    lvl->chemistry[0] = malloc(lvl->height * lvl->width * sizeof(inventory_item*));
 
     // Setup pointers on 2D arrays
     for (int x = 1; x < lvl->width; x++) {
-        lvl->tiles[x] = lvl->tiles[0] + x * level_height;
-        lvl->memory[x] = lvl->memory[0] + x * level_height;
-        lvl->items[x] = lvl->items[0] + x * level_height;
-        lvl->chemistry[x] = lvl->chemistry[0] + x * level_height;
+        lvl->tiles[x] = lvl->tiles[0] + x * lvl->height;
+        lvl->memory[x] = lvl->memory[0] + x * lvl->height;
+        lvl->items[x] = lvl->items[0] + x * lvl->height;
+        lvl->chemistry[x] = lvl->chemistry[0] + x * lvl->height;
     }
 
     // Initialize 2D arrays
@@ -239,8 +239,16 @@ level* make_level(long int map_seed) {
     push_inventory(lvl->player, stick);
 
     for (int i=0; i < lvl->mob_count-1; i++) {
-        lvl->mobs[i]->x = rand_int(level_width);
-        lvl->mobs[i]->y = rand_int(level_height);
+        int x = 0;
+        int y = 0;
+
+        while (lvl->tiles[x][y] != TILE_FLOOR) {
+            x = rand_int(lvl->width);
+            y = rand_int(lvl->height);
+        }
+
+        lvl->mobs[i]->x = x;
+        lvl->mobs[i]->y = y;
         lvl->mobs[i]->active = true;
 
         switch (rand_int(NUM_MONSTER_TYPES)) {
