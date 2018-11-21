@@ -25,7 +25,7 @@ typedef struct Level {
     bool active;
 } level;
 
-level* make_level(long int map_seed, bool reveal_map);
+level* make_level(long int map_seed);
 void destroy_level(level *lvl);
 
 void level_push_item(level *lvl, item *itm, int x, int y);
@@ -33,5 +33,6 @@ item* level_pop_item(level *lvl, int x, int y);
 
 bool is_position_valid(level *lvl, int x, int y);
 bool move_if_valid(level *lvl, mobile *mob, int x, int y);
+void expose_map(level *lvl);
 
 #endif

@@ -128,7 +128,7 @@ static int umber_hulk_next_firing(void *context, void* vmob, struct event_listen
 
 static void make_map(level *lvl);
 
-level* make_level(long int map_seed, bool reveal_map) {
+level* make_level(long int map_seed) {
     srand(map_seed);
 
     level *lvl = malloc(sizeof *lvl);
@@ -185,15 +185,6 @@ level* make_level(long int map_seed, bool reveal_map) {
 
     //TODO have make_map() return the starting coords for the player based on root room
     make_map(lvl);
-
-    if (reveal_map) {
-        //TODO I think there is no better way to copy a 2D array?
-        for (int x = 0; x < lvl->width; x++) {
-            for (int y = 0; y < lvl->height; y++) {
-                lvl->memory[x][y] = lvl->tiles[x][y];
-            }
-        }
-    }
 
     lvl->player = lvl->mobs[lvl->mob_count-1];
     lvl->player->x = lvl->player->y = 1;
@@ -492,5 +483,13 @@ bool move_if_valid(level *lvl, mobile *mob, int x, int y) {
         return true;
     } else {
         return false;
+    }
+}
+
+void expose_map(level *lvl) {
+    for (int x = 0; x < lvl->width; x++) {
+        for (int y = 0; y < lvl->height; y++) {
+                lvl->memory[x][y] = lvl->tiles[x][y];
+        }
     }
 }
