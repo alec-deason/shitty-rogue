@@ -126,9 +126,9 @@ void random_walk_fire(void *context, void* vmob) {
     int y = mob->y;
 
     if (prob(0.5)) {
-        x += choose(3) - 2;
+        x += rand_int(2) - 1;
     } else {
-        y += choose(3) - 2;
+        y += rand_int(2) - 1;
     }
 
     if (x != mob->x || y != mob->y) {

@@ -90,8 +90,7 @@ static void minotaur_fire(void *context, void* vmob) {
 
 static void umber_hulk_fire(void *context, void* vmob) {
     mobile *mob = (mobile*)vmob;
-    //TODO did I keep the logic the same?
-    if (prob(0.8)) { //TODO magic number
+    if (prob(0.2)) { //TODO magic number
         if (*(bool*)mob->state) {
             *(bool*)mob->state = false;
             mob->base.display = ICON_UMBER_HULK_ASLEEP;
@@ -129,7 +128,7 @@ static int umber_hulk_next_firing(void *context, void* vmob, struct event_listen
 
 static void make_map(level *lvl);
 
-level* make_level(long int map_seed, bool reveal_map) {
+level* make_level(long int map_seed) {
     srand(map_seed);
 
     level *lvl = malloc(sizeof *lvl);
@@ -187,15 +186,6 @@ level* make_level(long int map_seed, bool reveal_map) {
     //TODO have make_map() return the starting coords for the player based on root room
     make_map(lvl);
 
-    if (reveal_map) {
-        //TODO I think there is no better way to copy a 2D array?
-        for (int x = 0; x < lvl->width; x++) {
-            for (int y = 0; y < lvl->height; y++) {
-                lvl->memory[x][y] = lvl->tiles[x][y];
-            }
-        }
-    }
-
     lvl->player = lvl->mobs[lvl->mob_count-1];
     lvl->player->x = lvl->player->y = 1;
     struct agent a;
@@ -249,13 +239,12 @@ level* make_level(long int map_seed, bool reveal_map) {
     push_inventory(lvl->player, stick);
 
     for (int i=0; i < lvl->mob_count-1; i++) {
-        lvl->mobs[i]->x = choose(level_width - 1);
-        lvl->mobs[i]->y = choose(level_height - 1);
+        lvl->mobs[i]->x = rand_int(level_width);
+        lvl->mobs[i]->y = rand_int(level_height);
         lvl->mobs[i]->active = true;
 
-        //TODO magic number (not really, but still not good)
-        switch (choose(4)) {
-            case 1:
+        switch (rand_int(NUM_MONSTER_TYPES)) {
+            case Goblin:
                 ((item*)lvl->mobs[i])->display = ICON_GOBLIN;
                 lvl->mobs[i]->stacks = true;
                 ((item*)lvl->mobs[i])->name = malloc(sizeof(char)*7);
@@ -266,7 +255,7 @@ level* make_level(long int map_seed, bool reveal_map) {
                 simulation_push_agent(lvl->sim, &a);
                 strcpy(((item*)lvl->mobs[i])->name, "goblin");
                 break;
-            case 2:
+            case Orc:
                 ((item*)lvl->mobs[i])->display = ICON_ORC;
                 ((item*)lvl->mobs[i])->name = malloc(sizeof(char)*4);
                 a.next_firing = random_walk_next_firing;
@@ -276,7 +265,7 @@ level* make_level(long int map_seed, bool reveal_map) {
                 simulation_push_agent(lvl->sim, &a);
                 strcpy(((item*)lvl->mobs[i])->name, "orc");
                 break;
-            case 3:
+            case Umberhulk:
                 ((item*)lvl->mobs[i])->display = ICON_UMBER_HULK_AWAKE;
                 ((item*)lvl->mobs[i])->name = malloc(sizeof(char)*4);
                 ((item*)lvl->mobs[i])->health = 30;
@@ -289,7 +278,7 @@ level* make_level(long int map_seed, bool reveal_map) {
                 simulation_push_agent(lvl->sim, &a);
                 strcpy(((item*)lvl->mobs[i])->name, "umberhulk");
                 break;
-            default:
+            case Minotaur:
                 ((item*)lvl->mobs[i])->display = ICON_MINOTAUR;
                 ((item*)lvl->mobs[i])->name = malloc(sizeof(char)*9);
                 a.next_firing = random_walk_next_firing;
@@ -298,6 +287,9 @@ level* make_level(long int map_seed, bool reveal_map) {
                 a.listeners = ((item*)lvl->mobs[i])->listeners;
                 simulation_push_agent(lvl->sim, &a);
                 strcpy(((item*)lvl->mobs[i])->name, "minotaur");
+                break;
+            default:
+                logger("Fell through to 'default' in monster 'switch'\n");
                 break;
         }
     }
@@ -342,7 +334,7 @@ static int partition(int **room_map, int x, int y, int w, int h, int rm) {
         if (new_rm > max_rm) max_rm = new_rm;
         return max_rm;
     } else {
-        rm += 1; // TODO Why not rm++?
+        rm++;
         for (int xx = x; xx < x+w; xx++) {
             for (int yy = y; yy < y+h; yy++) {
                 room_map[xx][yy] = rm;
@@ -396,8 +388,8 @@ static void make_map(level *lvl) {
     }
 
     // determine the "root" room
-    int rand_x = choose(lvl->width);
-    int rand_y = choose(lvl->height);
+    int rand_x = rand_int(lvl->width) + 1;
+    int rand_y = rand_int(lvl->height) + 1;
 
     room_connected[room_tiles[rand_x][rand_y]] = true;
 
@@ -491,5 +483,13 @@ bool move_if_valid(level *lvl, mobile *mob, int x, int y) {
         return true;
     } else {
         return false;
+    }
+}
+
+void expose_map(level *lvl) {
+    for (int x = 0; x < lvl->width; x++) {
+        for (int y = 0; y < lvl->height; y++) {
+                lvl->memory[x][y] = lvl->tiles[x][y];
+        }
     }
 }

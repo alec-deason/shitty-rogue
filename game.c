@@ -136,98 +136,103 @@ void level_step_chemistry(level* lvl) {
     }
 }
 
-bool set_options(long int *map_seed, long int *events_seed, bool *reveal_map) {
-        const char* env_enable_log = getenv("ENABLE_LOG");
-        const char* env_map_seed = getenv("MAP_SEED");
-        const char* env_events_seed = getenv("EVENTS_SEED");
-        const char* env_reveal_map = getenv("REVEAL_MAP");
+void set_options(long int *map_seed, long int *events_seed, bool *reveal_map) {
+    const char* env_enable_log = getenv("ENABLE_LOG");
+    const char* env_map_seed = getenv("MAP_SEED");
+    const char* env_events_seed = getenv("EVENTS_SEED");
+    const char* env_reveal_map = getenv("REVEAL_MAP");
 
-        if (env_enable_log != NULL) {
-            // 'logging_active' is a global
-            logging_active = true;
-        }
+    if (env_enable_log != NULL) {
+        // 'logging_active' is a global variable
+        logging_active = true;
+    }
 
-        if (env_map_seed == NULL) {
-            *map_seed = time(NULL);
-        } else {
-            *map_seed = atoi(env_map_seed);
-            logger("Getting map seed from environment variable: %s\n", env_map_seed);
-        }
+    if (env_map_seed == NULL) {
+        *map_seed = time(NULL);
+    } else {
+        *map_seed = atoi(env_map_seed);
+        logger("Getting map seed from environment variable: %s\n", env_map_seed);
+    }
 
-        if (env_events_seed == NULL) {
-            *events_seed = time(NULL);
-        } else if (strcmp(env_events_seed, "SAME") == 0) {
-            *events_seed = *map_seed;
-            logger("Getting mob seed from map seed: %s\n", env_events_seed);
-        } else {
-            *events_seed = atoi(env_events_seed);
-            logger("Getting mob seed from environment variable: %s\n", env_events_seed);
-        }
+    if (env_events_seed == NULL) {
+        *events_seed = time(NULL);
+    } else if (strcmp(env_events_seed, "SAME") == 0) {
+        *events_seed = *map_seed;
+        logger("Getting mob seed from map seed: %s\n", env_events_seed);
+    } else {
+        *events_seed = atoi(env_events_seed);
+        logger("Getting mob seed from environment variable: %s\n", env_events_seed);
+    }
 
-        if (env_reveal_map != NULL) {
-            *reveal_map = true;
-            logger("Running with map revealed: %s\n", env_reveal_map);
-        }
+    if (env_reveal_map != NULL) {
+        *reveal_map = true;
+        logger("Running with map revealed: %s\n", env_reveal_map);
+    }
 }
 
 int main() {
-        int ch;
-        int turn = 0;
-        level *lvl;
+    int ch;
+    int turn = 1;
+    level *lvl;
 
-        long int map_seed;
-        long int events_seed;
-        bool reveal_map;
+    long int map_seed;
+    long int events_seed;
+    bool reveal_map;
 
-        set_options(&map_seed, &events_seed, &reveal_map);
+    set_options(&map_seed, &events_seed, &reveal_map);
 
-        logger("### Starting new game (MAP_SEED=%d EVENTS_SEED=%d) ###\n", map_seed, events_seed);
+    logger("### Starting new game (MAP_SEED=%d EVENTS_SEED=%d) ###\n", map_seed, events_seed);
 
-        init_rendering_system();
+    init_rendering_system();
 
-        lvl = make_level(map_seed, reveal_map);
+    lvl = make_level(map_seed);
 
-        draw_level(lvl);
+    if (reveal_map) {
+        expose_map(lvl);
+    }
 
-        srand(events_seed);
+    draw_level(lvl);
 
-        // Main Loop
-        while (lvl->active) {
-            logger("=== Turn %4d ===\n", turn++);
-            turn++;
-            sync_simulation(lvl->sim, turn*TICKS_PER_TURN);
+    srand(events_seed);
 
-            for (int i=0; i < lvl->mob_count; i++) {
-                if (lvl->mobs[i]->active) {
-                    step_mobile(lvl, lvl->mobs[i]);
-                }
+    // Main Loop
+    while (lvl->active) {
+        logger("=== Turn %3d ===\n", turn);
+        turn++;
+
+        sync_simulation(lvl->sim, turn * TICKS_PER_TURN);
+
+        for (int i=0; i < lvl->mob_count; i++) {
+            if (lvl->mobs[i]->active) {
+                step_mobile(lvl, lvl->mobs[i]);
             }
-
-            // Update chemistry model
-            level_step_chemistry(lvl);
-
-            // Prep death message if player is dead
-            if (!lvl->player->active) {
-                print_message("You die");
-            }
-
-            // Update the screen
-            draw_level(lvl);
-
-            // If the player is dead, wait for input
-            if (!lvl->player->active) {
-                get_input(lvl);
-                break;
-            }
-
-            // Clear message
-            print_message("");
-
-            get_input(lvl);
         }
 
-        destroy_level(lvl);
+        // Update chemistry model
+        level_step_chemistry(lvl);
 
-        cleanup_rendering_system();
-        return 0;
+        // Prep death message if player is dead
+        if (!lvl->player->active) {
+            print_message("You die");
+        }
+
+        // Update the screen
+        draw_level(lvl);
+
+        // If the player is dead, wait for input
+        if (!lvl->player->active) {
+            get_input(lvl);
+            break;
+        }
+
+        // Clear message
+        print_message("");
+
+        get_input(lvl);
+    }
+
+    destroy_level(lvl);
+
+    cleanup_rendering_system();
+    return 0;
 }

@@ -8,8 +8,6 @@
 
 #define prob(p) (frand() <= p)
 
-//TODO do we want this?
-//TODO do we want 1..N?
-#define choose(n) (rand() % (n + 1) + 1)
+#define rand_int(n) (rand() % n)
 
 #endif
