@@ -84,6 +84,7 @@ static void minotaur_fire(void *context, void* vmob) {
             ((item*) mob)->display = EMOTE_ANGRY;
         }
     } else {
+        //TODO what does this mob vs. vmob do?
         random_walk_fire(context, vmob);
     }
 }
@@ -251,7 +252,7 @@ level* make_level(long int map_seed) {
         lvl->mobs[i]->y = y;
         lvl->mobs[i]->active = true;
 
-        switch (rand_int(NUM_MONSTER_TYPES)) {
+        switch (rand_int(NUM_MONSTER_TYPES - 1)) {
             case Goblin:
                 ((item*)lvl->mobs[i])->display = ICON_GOBLIN;
                 lvl->mobs[i]->stacks = true;
@@ -297,7 +298,7 @@ level* make_level(long int map_seed) {
                 strcpy(((item*)lvl->mobs[i])->name, "minotaur");
                 break;
             default:
-                logger("Fell through to 'default' in monster 'switch'\n");
+                logger("Fell through to 'default' in monster selection switch statement\n");
                 break;
         }
     }
@@ -465,10 +466,10 @@ item* level_pop_item(level *lvl, int x, int y) {
 
 bool is_position_valid(level *lvl, int x, int y) {
     if (x >= lvl->width || x < 0) {
-        logger("ERROR %s: %s: %d\n", "is_position_valid", "x is out of bounds", x);
+        logger("ERROR: Position (%d,%d) is not valid: %s\n", x, y, "x is out of bounds");
         return false;
     } else if (y >= lvl->height || y < 0) {
-        logger("ERROR %s: %s: %d\n", "is_position_valid", "y is out of bounds", y);
+        logger("ERROR: Position (%d,%d) is not valid: %s\n", x, y, "y is out of bounds");
         return false;
     } else if (lvl->tiles[x][y] == TILE_WALL) {
         return false;
