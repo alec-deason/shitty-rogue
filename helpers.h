@@ -8,6 +8,6 @@
 
 #define prob(p) (frand() <= p)
 
-#define rand_int(n) (rand() % n)
+#define rand_int(n) (rand() % (n + 1))
 
 #endif
