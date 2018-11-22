@@ -172,7 +172,7 @@ void set_options(long int *map_seed, long int *events_seed, bool *reveal_map) {
 
 int main() {
     int ch;
-    int turn = 1;
+    int turn = 0;
     level *lvl;
 
     long int map_seed;
