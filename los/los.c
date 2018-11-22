@@ -17,7 +17,7 @@ static bool check_line(level *lvl, int origin_x, int origin_y, int target_x, int
     int *stepper, *step;
     int *bumper, *bump;
 
-    // TODO Should 45 degrees be shallow or steep?
+    //TODO Should 45 degrees be shallow or steep?
     if (dx > dy) {
         // shallow slope - step along X-axis
         rise = &dy;

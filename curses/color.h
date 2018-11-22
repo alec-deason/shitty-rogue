@@ -7,10 +7,10 @@
 #define REQUIRED_COLOR_PAIRS 256
 
 // Custom colors
-// TODO should I not use the COLOR_ prefix to make it clear
-//   that this is not a built-in color?
+//TODO should I not use the COLOR_ prefix to make it clear
+//TODO that this is not a built-in color?
 #define COLOR_BROWN 17
-// TODO this 17 and the one below are different... is this dumb?
+//TODO this 17 and the one below are different... is this dumb?
 #define COLOR_DARK_GRAY 18
 #define COLOR_LIGHT_GRAY 19
 
